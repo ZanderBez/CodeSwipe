@@ -1,11 +1,10 @@
 import React, { useState } from "react";
-import { SafeAreaView, View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import { SafeAreaView, KeyboardAvoidingView, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Platform} from "react-native";
 import { loginUser } from "../services/authService";
 
-function LoginScreen({ navigation }: any) {
+export default function LoginScreen({ navigation }: any) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -14,22 +13,24 @@ function LoginScreen({ navigation }: any) {
     }
     try {
       await loginUser(email, password);
-      setMessage("Login successful!");
-      navigation.navigate("Home");
+      navigation.replace("Home");
     } catch (error: any) {
-      setMessage(error.message || "Login failed.");
       Alert.alert("Login Failed", error.message);
     }
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
+        <Text style={styles.appName}>CodeSwipe</Text>
         <Text style={styles.heading}>Log In</Text>
         <TextInput
           style={styles.input}
           placeholder="Email"
-          placeholderTextColor="#aaa"
+          placeholderTextColor="#AAA"
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
@@ -37,46 +38,70 @@ function LoginScreen({ navigation }: any) {
         <TextInput
           style={styles.input}
           placeholder="Password"
-          placeholderTextColor="#aaa"
+          placeholderTextColor="#AAA"
           value={password}
           onChangeText={setPassword}
           secureTextEntry
         />
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Log In</Text>
+        <TouchableOpacity style={styles.primaryButton} onPress={handleLogin}>
+          <Text style={styles.primaryButtonText}>Log In</Text>
         </TouchableOpacity>
-
         <TouchableOpacity onPress={() => navigation.navigate("SignUp")}>
           <Text style={styles.link}>Don't have an account? Sign Up</Text>
         </TouchableOpacity>
-
-        {message ? <Text style={styles.message}>{message}</Text> : null}
-      </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
-export default LoginScreen;
-
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: "#323232" },
-  container: { flex: 1, justifyContent: "center", paddingHorizontal: 40 },
-  heading: { fontSize: 28, color: "#7AE2CF", marginBottom: 20, textAlign: "center" },
-  input: {
-    borderBottomWidth: 1,
-    borderColor: "#7AE2CF",
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#323232"
+  },
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    paddingHorizontal: 30
+  },
+  appName: {
+    fontSize: 28,
+    color: "#7AE2CF",
+    textAlign: "center",
+    marginBottom: 6,
+    fontWeight: "700"
+  },
+  heading: {
+    fontSize: 18,
     color: "#FEFBF6",
-    marginBottom: 20,
-    padding: 10,
-    fontSize: 16,
+    marginBottom: 18,
+    textAlign: "center"
   },
-  button: {
-    backgroundColor: "#7AE2CF",
-    paddingVertical: 12,
+  input: {
+    borderWidth: 1,
+    borderColor: "#FEFBF6",
+    color: "#FEFBF6",
     borderRadius: 8,
-    marginTop: 10,
+    paddingHorizontal: 10,
+    paddingVertical: Platform.OS === "ios" ? 10 : 6,
+    marginBottom: 12,
+    fontSize: 14
   },
-  buttonText: { color: "#323232", fontSize: 18, fontWeight: "bold", textAlign: "center" },
-  link: { marginTop: 15, color: "#7AE2CF", textAlign: "center" },
-  message: { marginTop: 15, textAlign: "center", color: "#FEFBF6" },
+  primaryButton: {
+    backgroundColor: "#7AE2CF",
+    borderRadius: 8,
+    paddingVertical: 12,
+    marginBottom: 12
+  },
+  primaryButtonText: {
+    color: "#323232",
+    fontSize: 16,
+    fontWeight: "600",
+    textAlign: "center"
+  },
+  link: {
+    color: "#7AE2CF",
+    fontSize: 12,
+    textAlign: "center"
+  }
 });
