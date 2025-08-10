@@ -1,42 +1,58 @@
 import { auth, db } from "../firebase";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, UserCredential } from "firebase/auth";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  UserCredential,
+  updateProfile
+} from "firebase/auth";
+import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 
-// Register new user that can choose user or admin
 export const registerUser = async (
   name: string,
-  email: string, 
-  password: string, 
+  email: string,
+  password: string,
   role: "user" | "admin"
 ): Promise<UserCredential> => {
-  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-  const user = userCredential.user;
-
-  await setDoc(doc(db, "users", user.uid), {
+  const cred = await createUserWithEmailAndPassword(auth, email, password);
+  await updateProfile(cred.user, { displayName: name, photoURL: null as any });
+  await setDoc(doc(db, "users", cred.user.uid), {
     name,
-    email: user.email,
+    email: cred.user.email,
+    photoURL: null,
     createdAt: new Date().toISOString(),
-    role: role
+    role
   });
-
-  return userCredential;
+  return cred;
 };
 
-// Login user and fetch Firestore user data (including role)
 export const loginUser = async (email: string, password: string) => {
-  const userCredential = await signInWithEmailAndPassword(auth, email, password);
-  const user = userCredential.user;
-
-  const userDoc = await getDoc(doc(db, "users", user.uid));
-  return { user, data: userDoc.exists() ? userDoc.data() : null };
+  const cred = await signInWithEmailAndPassword(auth, email, password);
+  const snap = await getDoc(doc(db, "users", cred.user.uid));
+  return { user: cred.user, data: snap.exists() ? snap.data() : null };
 };
 
-// Logout user
 export const logoutUser = async () => {
-  try {
-    await signOut(auth);
-    console.log("User signed out");
-  } catch (error: any) {
-    throw error;
+  await signOut(auth);
+};
+
+export const syncUserProfile = async (params: {
+  uid: string;
+  name?: string | null;
+  photoURL?: string | null;
+  email?: string | null;
+}) => {
+  const { uid, name, photoURL, email } = params;
+  if (auth.currentUser && auth.currentUser.uid === uid) {
+    await updateProfile(auth.currentUser, {
+      displayName: name ?? auth.currentUser.displayName ?? "",
+      photoURL: photoURL ?? auth.currentUser.photoURL ?? null as any
+    });
   }
+  const ref = doc(db, "users", uid);
+  await updateDoc(ref, {
+    ...(name !== undefined ? { name } : {}),
+    ...(photoURL !== undefined ? { photoURL } : {}),
+    ...(email !== undefined ? { email } : {})
+  });
 };

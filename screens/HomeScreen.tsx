@@ -1,119 +1,86 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  Dimensions,
-  Platform
-} from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Platform, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
+import Sidebar from "../components/Sidebar";
 import { logoutUser } from "../services/authService";
 import { auth, db } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
 
 export default function HomeScreen({ navigation }: any) {
   const [name, setName] = useState<string>("");
-  const [streak, setStreak] = useState<number>(0);
-  const difficulties4 = ["Beginner", "Intermediate", "Expert", "All Levels"] as const;
-  const [scores] = useState({ Beginner: 0, Intermediate: 0, Expert: 5, "All Levels": 0 });
 
   useEffect(() => {
     if (auth.currentUser) {
-      getDoc(doc(db, "users", auth.currentUser.uid)).then(snap => {
+      getDoc(doc(db, "users", auth.currentUser.uid)).then((snap) => {
         if (snap.exists()) {
           const data = snap.data();
           setName(data.name || "");
-          setStreak(data.streak || 0);
         }
       });
     }
   }, []);
 
-  const handleLogout = async () => {
-    await logoutUser();
-    navigation.replace("Login");
-  };
-
-  const today = new Date().toLocaleDateString("en-GB", {
-    weekday: "short",
-    day: "numeric",
-    month: "short"
-  });
+  const progressData = [
+    { label: "Beginner", value: 2, max: 12 },
+    { label: "Intermediate", value: 5, max: 12 },
+    { label: "Advanced", value: 1, max: 12 },
+    { label: "No Lifers", value: 8, max: 12 }
+  ];
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <View style={styles.sidebar}>
-          <Text style={styles.date}>{today}</Text>
-          <TouchableOpacity
-            style={[styles.iconBtn, styles.activeBtn]}
-            onPress={() => navigation.navigate("Home")}
-          >
-            <Ionicons name="home-outline" size={24} color="#FFF" />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.iconBtn}
-            onPress={() => navigation.navigate("Flashcards", { difficulty: "Beginner" })}
-          >
-            <Ionicons name="book-outline" size={24} color="#FFF" />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.iconBtn}
-            onPress={() => navigation.navigate("Progress")}
-          >
-            <Ionicons name="bar-chart-outline" size={24} color="#FFF" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.iconBtn} onPress={handleLogout}>
-            <Ionicons name="log-out-outline" size={24} color="#FFF" />
-          </TouchableOpacity>
-        </View>
+      <View style={styles.root}>
+        <Sidebar name={name} navigation={navigation} />
 
-        <View style={styles.mainContent}>
-          <Text style={styles.welcomeHeader}>
-            Welcome{name ? `, ${name}` : ""}!
-          </Text>
+        <View style={styles.content}>
+          <View style={styles.cardsRow}>
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>Code Points</Text>
 
-          <View style={styles.sectionsRow}>
-
-            <View style={styles.progressSection}>
-              <Text style={styles.sectionTitle}>Your Score</Text>
-              <ScrollView contentContainerStyle={{ paddingVertical: 10 }}>
-                {difficulties4.map(level => {
-                  const pct = (scores[level] / 10) * 100;
-                  return (
-                    <View key={level} style={styles.progressRow}>
-                      <Text style={styles.progressLabel}>{level}</Text>
-                      <View style={styles.progressBar}>
-                        <View style={[styles.progressFill, { width: `${pct}%` }]} />
-                      </View>
-                      <Text style={styles.progressText}>{scores[level]} / 10</Text>
+              {progressData.map((row) => {
+                const pct = Math.min((row.value / row.max) * 100, 100);
+                return (
+                  <View key={row.label} style={styles.progressBlock}>
+                    <View style={styles.progressHead}>
+                      <Text style={styles.progressLabel}>{row.label}</Text>
+                      <Text style={styles.progressCount}>{row.value}/{row.max}</Text>
                     </View>
-                  );
-                })}
-              </ScrollView>
-              <TouchableOpacity
-                style={styles.detailsBtn}
-                onPress={() => navigation.navigate("Progress")}
-              >
-                <Text style={styles.detailsBtnText}>View Details</Text>
+
+                    <View style={styles.track}>
+                      <View style={[styles.fillTeal, { width: `${pct}%` }]} />
+                    </View>
+                  </View>
+                );
+              })}
+
+              <TouchableOpacity style={styles.pillBtn} onPress={() => navigation.navigate("Summary")}>
+                <Text style={styles.pillBtnText}>Details</Text>
               </TouchableOpacity>
             </View>
 
-            <View style={styles.difficultySection}>
-              <Text style={styles.sectionTitle}>Select Difficulty</Text>
-              <View style={styles.difficultyGrid}>
-                {difficulties4.map(level => (
-                  <TouchableOpacity
-                    key={level}
-                    style={styles.difficultyCard}
-                    onPress={() => navigation.navigate("Flashcards", { difficulty: level })}
-                  >
-                    <Text style={styles.difficultyText}>{level}</Text>
-                  </TouchableOpacity>
-                ))}
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>How Brave are you?</Text>
+
+              <View style={styles.grid}>
+                <TouchableOpacity style={styles.gridItem} onPress={() => navigation.navigate("Flashcards", { difficulty: "Beginner" })}>
+                  <Image source={require("../assets/card1.png")} style={styles.illustrationImg} resizeMode="cover" />
+                  <View style={styles.levelPill}><Text style={styles.levelPillText}>Beginner</Text></View>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.gridItem} onPress={() => navigation.navigate("Flashcards", { difficulty: "Intermediate" })}>
+                  <Image source={require("../assets/card2.png")} style={styles.illustrationImg} resizeMode="cover" />
+                  <View style={styles.levelPill}><Text style={styles.levelPillText}>Intermediate</Text></View>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.gridItem} onPress={() => navigation.navigate("Flashcards", { difficulty: "Advanced" })}>
+                  <Image source={require("../assets/card3.png")} style={styles.illustrationImg} resizeMode="cover" />
+                  <View style={styles.levelPill}><Text style={styles.levelPillText}>Advanced</Text></View>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.gridItem} onPress={() => navigation.navigate("Flashcards", { difficulty: "No Lifers" })}>
+                  <Image source={require("../assets/card4.png")} style={styles.illustrationImg} resizeMode="cover" />
+                  <View style={styles.levelPill}><Text style={styles.levelPillText}>No Lifers</Text></View>
+                </TouchableOpacity>
               </View>
             </View>
           </View>
@@ -123,139 +90,121 @@ export default function HomeScreen({ navigation }: any) {
   );
 }
 
-const { width } = Dimensions.get("window");
-
 const styles = StyleSheet.create({
-  safeArea: { 
-    flex: 1, 
-    backgroundColor: "#323232" 
-  },
-  container: { 
-    flex: 1, 
-    flexDirection: "row" 
-  }, 
-  sidebar: {
-    width: 60,
-    justifyContent: "flex-start",
-    alignItems: "center",
-    paddingTop: Platform.OS === "ios" ? 20 : 10
-  },
-  date: { 
-    color: "#FEFBF6", 
-    fontSize: 12, 
-    marginBottom: 4 
-  },
-  streak: { 
-    color: "#FEFBF6", 
-    fontSize: 12, 
-    marginBottom: 16 
-  },
-  iconBtn: {
-    backgroundColor: "#C678DD",
-    width: 40,
-    height: 40,
-    borderRadius: 8,
-    marginVertical: 12,
-    justifyContent: "center",
-    alignItems: "center"
-  },
-  activeBtn: { 
-    backgroundColor: "#7AE2CF" 
-  },
-  mainContent: {
+  safeArea: {
     flex: 1,
-    paddingHorizontal: 16
+    backgroundColor: "#000000"
   },
-  welcomeHeader: {
-    color: "#FEFBF6",
-    fontSize: 24,
-    fontWeight: "600",
-    marginTop: 20,
-    marginBottom: 16
-  },
-  sectionsRow: {
+  root: {
     flex: 1,
     flexDirection: "row"
   },
-
-  progressSection: {
-    flex: 2,
-    backgroundColor: "#7AE2CF",
-    borderRadius: 12,
-    padding: 16,
-    marginRight: 8
+  content: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingVertical: 16
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#323232",
-    marginBottom: 8
+  cardsRow: {
+    flex: 1,
+    flexDirection: "row",
+    gap: 20
   },
-  progressRow: {
+  card: {
+    flex: 1,
+    backgroundColor: "#0E0E0E",
+    borderRadius: 22,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: "#7AE2CF"
+  },
+  cardTitle: {
+    color: "#FFFFFF",
+    fontSize: 22,
+    fontWeight: "800",
+    marginBottom: 12,
+    letterSpacing: 0.5
+  },
+  progressBlock: {
+    marginBottom: 16
+  },
+  progressHead: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 12
+    justifyContent: "space-between",
+    marginBottom: 6
   },
   progressLabel: {
-    width: 90,
-    color: "#323232",
+    color: "#FFFFFF",
     fontSize: 14
   },
-  progressBar: {
-    flex: 1,
-    height: 8,
-    backgroundColor: "#323232",
-    borderRadius: 4,
-    overflow: "hidden",
-    marginHorizontal: 8
-  },
-  progressFill: {
-    height: "100%",
-    backgroundColor: "#FEFBF6"
-  },
-  progressText: {
-    width: 50,
-    color: "#323232",
+  progressCount: {
+    color: "#FFFFFF",
     fontSize: 12,
-    textAlign: "right"
+    opacity: 0.9
   },
-  detailsBtn: {
-    backgroundColor: "#323232",
-    paddingVertical: 10,
-    borderRadius: 6,
+  track: {
+    height: 16,
+    backgroundColor: "#0B0B0B",
+    borderRadius: 999,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "#1F1F1F"
+  },
+  fillTeal: {
+    position: "absolute",
+    left: 0,
+    top: 0,
+    bottom: 0,
+    backgroundColor: "#FD5308",
+    borderTopRightRadius: 999,
+    borderBottomRightRadius: 999
+  },
+  pillBtn: {
+    marginTop: "auto",
+    backgroundColor: "#7AE2CF",
+    height: 44,
+    borderRadius: 22,
     alignItems: "center",
-    marginTop: 10
+    justifyContent: "center"
   },
-  detailsBtnText: {
-    color: "#FEFBF6",
-    fontSize: 14,
-    fontWeight: "600"
+  pillBtnText: {
+    color: "#ffffffff",
+    fontWeight: "800"
   },
-
-  difficultySection: {
-    flex: 3,
-    backgroundColor: "#C678DD",
-    borderRadius: 12,
-    padding: 16,
-    marginLeft: 8
-  },
-  difficultyGrid: {
+  grid: {
+    width: "100%",
     flexDirection: "row",
     flexWrap: "wrap",
+    justifyContent: "space-between",
+    rowGap: 12
+  },
+  gridItem: {
+    maxWidth: "48%",
+    aspectRatio: 1,
+    backgroundColor: "#ffffffff",
+    borderRadius: 16,
+    padding: 10,
+    overflow: "hidden",
     justifyContent: "space-between"
   },
-  difficultyCard: {
-    width: "48%",
-    aspectRatio: 1.6,
-    backgroundColor: "#FEFBF6",
-    borderRadius: 8,
-    marginBottom: 12,
-    justifyContent: "center",
-    alignItems: "center"
+  illustrationImg: {
+    width: "100%",
+    flex: 1,
+    borderRadius: 12
   },
-  difficultyText: {
-    color: "#323232",
-    fontSize: 16,
-    fontWeight: "600"
+  levelPill: {
+    alignSelf: "center",
+    height: 25,
+    paddingHorizontal: 14,
+    borderRadius: 14,
+    backgroundColor: "#7AE2CF",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 8
+  },
+  levelPillText: {
+    color: "#ffffffff",
+    fontWeight: "800",
+    fontSize: 11
   }
 });
