@@ -1,9 +1,8 @@
 import { useCallback, useRef } from "react";
-import { StyleSheet, View, Pressable } from "react-native";
+import { StyleSheet, View} from "react-native";
 import { Video, ResizeMode, AVPlaybackStatusSuccess } from "expo-av";
 import * as Splash from "expo-splash-screen";
-import { useNavigation } from "@react-navigation/native";
-import { auth } from "../firebase";
+import { useNavigation } from "@react-navigation/native"
 
 export default function SplashScreen() {
   const navigation = useNavigation<any>();
@@ -11,7 +10,6 @@ export default function SplashScreen() {
 
   const goNext = useCallback(async () => {
     try { await Splash.hideAsync(); } catch {}
-    const isLoggedIn = !!auth.currentUser;
     navigation.reset({
       index: 0,
       routes: [{ name: "SignUp"}],
@@ -22,21 +20,20 @@ export default function SplashScreen() {
     if (status?.isLoaded && status.didJustFinish) goNext();
   }, [goNext]);
 
-  return (
-    <View style={styles.container}>
-      <Pressable style={StyleSheet.absoluteFill} onPress={goNext} />
-      <Video
-        ref={videoRef}
-        source={require("../assets/intro.mp4")}
-        style={styles.video}
-        resizeMode={ResizeMode.CONTAIN}
-        shouldPlay
-        isLooping={false}
-        onReadyForDisplay={() => Splash.hideAsync().catch(() => {})}
-        onPlaybackStatusUpdate={onStatusUpdate}
-      />
-    </View>
-  );
+    return (
+      <View style={styles.container}>
+        <Video
+          ref={videoRef}
+          source={require("../assets/intro.mp4")}
+          style={styles.video}
+          resizeMode={ResizeMode.CONTAIN}
+          shouldPlay
+          isLooping={false}
+          onReadyForDisplay={() => Splash.hideAsync().catch(() => {})}
+          onPlaybackStatusUpdate={onStatusUpdate}
+        />
+      </View>
+    );
 }
 
 const styles = StyleSheet.create({

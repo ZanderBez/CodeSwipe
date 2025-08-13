@@ -1,38 +1,39 @@
-import React, { useState, useEffect } from "react";
-import { SafeAreaView, KeyboardAvoidingView, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Platform, View } from "react-native";
-import { loginUser } from "../services/authService";
-import { FontAwesome } from "@expo/vector-icons";
-import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing } from "react-native-reanimated";
+import React, { useState, useEffect } from "react"
+import { SafeAreaView, KeyboardAvoidingView, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Platform, View } from "react-native"
+import { loginUser } from "../services/authService"
+import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing } from "react-native-reanimated"
+import GoogleSwipeAuth from "../components/GoogleSwipeAuth"
+import { FontAwesome } from "@expo/vector-icons"
 
 export default function LoginScreen({ navigation }: any) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [loading, setLoading] = useState(false)
 
-  const bob = useSharedValue(0);
+  const bob = useSharedValue(0)
   useEffect(() => {
-    bob.value = withRepeat(withTiming(1, { duration: 2200, easing: Easing.inOut(Easing.quad) }), -1, true);
-  }, []);
+    bob.value = withRepeat(withTiming(1, { duration: 2200, easing: Easing.inOut(Easing.quad) }), -1, true)
+  }, [])
   const bobStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: (bob.value - 0.5) * 10 }]
-  }));
+  }))
 
   const handleLogin = async () => {
-    if (loading) return;
+    if (loading) return
     if (!email || !password) {
-      Alert.alert("Error", "Please enter both email and password.");
-      return;
+      Alert.alert("Error", "Please enter both email and password.")
+      return
     }
     try {
-      setLoading(true);
-      await loginUser(email, password);
-      navigation.replace("Home");
+      setLoading(true)
+      await loginUser(email, password)
+      navigation.replace("Home")
     } catch (error: any) {
-      Alert.alert("Login Failed", error.message);
+      Alert.alert("Login Failed", error.message)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -60,7 +61,6 @@ export default function LoginScreen({ navigation }: any) {
                 onChangeText={setPassword}
                 secureTextEntry
               />
-
               <TouchableOpacity
                 style={[styles.primaryButton, loading && { opacity: 0.6 }]}
                 onPress={handleLogin}
@@ -68,33 +68,36 @@ export default function LoginScreen({ navigation }: any) {
               >
                 <Text style={styles.primaryButtonText}>{loading ? "Logging in..." : "Log In"}</Text>
               </TouchableOpacity>
-
-              <TouchableOpacity disabled={loading} onPress={() => navigation.navigate("SignUp")}>
+              <TouchableOpacity
+                disabled={loading}
+                onPress={() => navigation.navigate("SignUp")}
+              >
                 <Text style={styles.link}>Dont Have an account ? <Text style={styles.linkStrong}>Sign Up</Text></Text>
               </TouchableOpacity>
             </View>
           </View>
 
           <View style={styles.rightCol}>
-            <Animated.View style={[styles.rightAnimated, bobStyle]}>
-              <View style={styles.rightCopy}>
-                <Text style={styles.rightTitle}>Log  In</Text>
-                <Text style={styles.rightSub}>with</Text>
-              </View>
-              <View style={styles.googleRow}>
-                <View style={styles.googleBadge}>
-                  <FontAwesome name="google" size={20} color="#000" />
+            <GoogleSwipeAuth onSuccess={() => navigation.replace("Home")} style={styles.rightSwipeArea}>
+              <Animated.View style={[styles.rightAnimated, bobStyle]}>
+                <View style={styles.rightCopy}>
+                  <Text style={styles.rightTitle}>Log In</Text>
+                  <Text style={styles.rightSub}>with</Text>
                 </View>
-                <Text style={styles.arrow}>→</Text>
-              </View>
-            </Animated.View>
+                <View style={styles.googleRow}>
+                  <View style={styles.googleBadge}>
+                    <FontAwesome name="google" size={20} color="#000" />
+                  </View>
+                  <Text style={styles.arrow}>→</Text>
+                </View>
+              </Animated.View>
+            </GoogleSwipeAuth>
           </View>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
-  );
+  )
 }
-
 
 const styles = StyleSheet.create({
   safeArea: {
@@ -181,6 +184,13 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
     paddingRight: 32
   },
+  rightSwipeArea: {
+    flex: 1,
+    width: "100%",
+    justifyContent: "center",
+    alignItems: "flex-end",
+    paddingRight: 32
+  },
   rightAnimated: {
     alignItems: "flex-end",
     gap: 8
@@ -219,4 +229,4 @@ const styles = StyleSheet.create({
     fontSize: 26,
     fontWeight: "700"
   }
-});
+})

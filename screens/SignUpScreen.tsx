@@ -3,6 +3,7 @@ import { SafeAreaView, KeyboardAvoidingView, Text, TextInput, TouchableOpacity, 
 import { registerUser } from "../services/authService";
 import { FontAwesome } from "@expo/vector-icons";
 import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing } from "react-native-reanimated";
+import GoogleSwipeAuth from "../components/GoogleSwipeAuth";
 
 export default function SignUpScreen({ navigation }: any) {
   const [name, setName] = useState("");
@@ -89,7 +90,7 @@ export default function SignUpScreen({ navigation }: any) {
                     styles.roleButton,
                     styles.roleAdmin,
                     role === "admin" && styles.roleAdminActive
-                  ]}
+                  ]} 
                   onPress={() => setRole("admin")}
                   disabled={loading}
                 >
@@ -108,25 +109,27 @@ export default function SignUpScreen({ navigation }: any) {
           </View>
 
           <View style={styles.rightCol}>
-            <Animated.View style={[styles.rightAnimated, bobStyle]}>
-              <View style={styles.rightCopy}>
-                <Text style={styles.rightTitle}>Sign up</Text>
-                <Text style={styles.rightSub}>with</Text>
-              </View>
-
-              <View style={styles.googleRow}>
-                <View style={styles.googleBadge}>
-                  <FontAwesome name="google" size={20} color="#000" />
+            <GoogleSwipeAuth onSuccess={() => navigation.replace("Home")} style={styles.rightSwipeArea}>
+              <Animated.View style={[styles.rightAnimated, bobStyle]}>
+                <View style={styles.rightCopy}>
+                  <Text style={styles.rightTitle}>Sign up</Text>
+                  <Text style={styles.rightSub}>with</Text>
                 </View>
-                <Text style={styles.arrow}>→</Text>
-              </View>
-            </Animated.View>
+                <View style={styles.googleRow}>
+                  <View style={styles.googleBadge}>
+                    <FontAwesome name="google" size={20} color="#000" />
+                  </View>
+                  <Text style={styles.arrow}>→</Text>
+                </View>
+              </Animated.View>
+            </GoogleSwipeAuth>
 
             <View style={styles.loginRow}>
               <Text style={styles.haveAcc}>Already Have an account ? </Text>
               <Text style={styles.loginLink} onPress={() => navigation.navigate("Login")}>Log In</Text>
             </View>
           </View>
+
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -271,6 +274,13 @@ const styles = StyleSheet.create({
     fontSize: 48,
     fontWeight: "800",
     letterSpacing: 1
+  },
+  rightSwipeArea: {
+    flex: 1,
+    width: "100%",
+    justifyContent: "center",
+    alignItems: "flex-end",
+    paddingRight: 32
   },
   googleRow: {
     flexDirection: "row",

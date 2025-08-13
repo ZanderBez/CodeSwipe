@@ -20,13 +20,13 @@ export default function ProfileScreen({ navigation }: any) {
     setEmail(u.email || "");
     setDisplayName(u.displayName || "");
     const ref = doc(db, "users", u.uid);
-    const unsub = onSnapshot(ref, (snap) => {
+    const unsubcribe = onSnapshot(ref, (snap) => {
       const d: any = snap.data() || {};
       if (typeof d.name === "string") setName(d.name);
       if (typeof d.photoURL === "string") setAvatarUrl(d.photoURL);
       if (!displayName && d.name) setDisplayName(d.name);
     });
-    return unsub;
+    return unsubcribe;
   }, []);
 
   const handleSave = async () => {
