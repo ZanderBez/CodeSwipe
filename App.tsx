@@ -13,6 +13,7 @@ import { auth } from "./firebase";
 import SplashScreen from "./screens/SplashScreen";
 import ProfileScreen from "./screens/ProfileScreen";
 import EditPhotoUrlScreen from "./screens/EditPhotoUrlScreen";
+import FlashcardsScreen from "./screens/FlashcardsScreen";
 
 const Stack = createNativeStackNavigator();
 Splash.preventAutoHideAsync().catch(() => {});
@@ -38,6 +39,8 @@ export default function App() {
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="Profile" component={ProfileScreen} />
           <Stack.Screen name="EditPhotoUrl" component={EditPhotoUrlScreen} />
+          <Stack.Screen name="Flashcards" component={FlashcardsScreen} options={{  gestureEnabled: true, fullScreenGestureEnabled: true }}
+          />
         </Stack.Navigator>
       </NavigationContainer>
     </GestureHandlerRootView>

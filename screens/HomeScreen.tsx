@@ -1,10 +1,26 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Platform, Image } from "react-native";
+import React, { useState, useEffect, memo } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Sidebar from "../components/Sidebar";
-import { logoutUser } from "../services/authService";
 import { auth, db } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
+
+type DeckId = "beginner" | "intermediate" | "advanced" | "nolifers";
+
+const ProgressRow = memo(({ label, value, max }: { label: string; value: number; max: number }) => {
+  const pct = Math.min((value / Math.max(1, max)) * 100, 100);
+  return (
+    <View style={styles.progressBlock}>
+      <View style={styles.progressHead}>
+        <Text style={styles.progressLabel}>{label}</Text>
+        <Text style={styles.progressCount}>{value}/{max}</Text>
+      </View>
+      <View style={styles.track}>
+        <View style={[styles.fillTeal, { width: `${pct}%` }]} />
+      </View>
+    </View>
+  );
+});
 
 export default function HomeScreen({ navigation }: any) {
   const [name, setName] = useState<string>("");
@@ -13,7 +29,7 @@ export default function HomeScreen({ navigation }: any) {
     if (auth.currentUser) {
       getDoc(doc(db, "users", auth.currentUser.uid)).then((snap) => {
         if (snap.exists()) {
-          const data = snap.data();
+          const data = snap.data() as any;
           setName(data.name || "");
         }
       });
@@ -21,65 +37,57 @@ export default function HomeScreen({ navigation }: any) {
   }, []);
 
   const progressData = [
-    { label: "Beginner", value: 2, max: 12 },
-    { label: "Intermediate", value: 5, max: 12 },
-    { label: "Advanced", value: 1, max: 12 },
-    { label: "No Lifers", value: 8, max: 12 }
+    { label: "Beginner", value: 2, max: 10, deckId: "beginner" as DeckId, title: "Beginner" },
+    { label: "Intermediate", value: 5, max: 10, deckId: "intermediate" as DeckId, title: "Intermediate" },
+    { label: "Advanced", value: 1, max: 10, deckId: "advanced" as DeckId, title: "Advanced" },
+    { label: "No Lifers", value: 8, max: 10, deckId: "nolifers" as DeckId, title: "No Lifers" }
   ];
+
+  const goDeck = (deckId: DeckId, title: string) => {
+    navigation.navigate("Flashcards", { deckId, title });
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.root}>
         <Sidebar name={name} navigation={navigation} />
-
         <View style={styles.content}>
           <View style={styles.cardsRow}>
             <View style={styles.card}>
               <Text style={styles.cardTitle}>Code Points</Text>
-
-              {progressData.map((row) => {
-                const pct = Math.min((row.value / row.max) * 100, 100);
-                return (
-                  <View key={row.label} style={styles.progressBlock}>
-                    <View style={styles.progressHead}>
-                      <Text style={styles.progressLabel}>{row.label}</Text>
-                      <Text style={styles.progressCount}>{row.value}/{row.max}</Text>
-                    </View>
-
-                    <View style={styles.track}>
-                      <View style={[styles.fillTeal, { width: `${pct}%` }]} />
-                    </View>
-                  </View>
-                );
-              })}
-
+              {progressData.map((row) => (
+                <ProgressRow key={row.label} label={row.label} value={row.value} max={row.max} />
+              ))}
               <TouchableOpacity style={styles.pillBtn} onPress={() => navigation.navigate("Summary")}>
                 <Text style={styles.pillBtnText}>Details</Text>
               </TouchableOpacity>
             </View>
-
             <View style={styles.card}>
               <Text style={styles.cardTitle}>How Brave are you?</Text>
-
               <View style={styles.grid}>
-                <TouchableOpacity style={styles.gridItem} onPress={() => navigation.navigate("Flashcards", { difficulty: "Beginner" })}>
+                <TouchableOpacity style={styles.gridItem} onPress={() => navigation.navigate("Flashcards", { deckId: "beginner", title: "Beginner" })}>
                   <Image source={require("../assets/card1.png")} style={styles.illustrationImg} resizeMode="cover" />
-                  <View style={styles.levelPill}><Text style={styles.levelPillText}>Beginner</Text></View>
+                  <View style={styles.levelPill}>
+                    <Text style={styles.levelPillText}>Beginner</Text>
+                  </View>
                 </TouchableOpacity>
-
-                <TouchableOpacity style={styles.gridItem} onPress={() => navigation.navigate("Flashcards", { difficulty: "Intermediate" })}>
+                <TouchableOpacity style={styles.gridItem} onPress={() => navigation.navigate("Flashcards", { deckId: "intermediate", title: "Intermediate" })}>
                   <Image source={require("../assets/card2.png")} style={styles.illustrationImg} resizeMode="cover" />
-                  <View style={styles.levelPill}><Text style={styles.levelPillText}>Intermediate</Text></View>
+                  <View style={styles.levelPill}>
+                    <Text style={styles.levelPillText}>Intermediate</Text>
+                  </View>
                 </TouchableOpacity>
-
-                <TouchableOpacity style={styles.gridItem} onPress={() => navigation.navigate("Flashcards", { difficulty: "Advanced" })}>
+                <TouchableOpacity style={styles.gridItem} onPress={() => navigation.navigate("Flashcards", { deckId: "advanced", title: "Advanced" })}>
                   <Image source={require("../assets/card3.png")} style={styles.illustrationImg} resizeMode="cover" />
-                  <View style={styles.levelPill}><Text style={styles.levelPillText}>Advanced</Text></View>
+                  <View style={styles.levelPill}>
+                    <Text style={styles.levelPillText}>Advanced</Text>
+                  </View>
                 </TouchableOpacity>
-
-                <TouchableOpacity style={styles.gridItem} onPress={() => navigation.navigate("Flashcards", { difficulty: "No Lifers" })}>
+                <TouchableOpacity style={styles.gridItem} onPress={() => navigation.navigate("Flashcards", { deckId: "nolifers", title: "No Lifers" })}>
                   <Image source={require("../assets/card4.png")} style={styles.illustrationImg} resizeMode="cover" />
-                  <View style={styles.levelPill}><Text style={styles.levelPillText}>No Lifers</Text></View>
+                  <View style={styles.levelPill}>
+                    <Text style={styles.levelPillText}>No Lifers</Text>
+                  </View>
                 </TouchableOpacity>
               </View>
             </View>
