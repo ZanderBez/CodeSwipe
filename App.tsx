@@ -39,8 +39,7 @@ export default function App() {
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="Profile" component={ProfileScreen} />
           <Stack.Screen name="EditPhotoUrl" component={EditPhotoUrlScreen} />
-          <Stack.Screen name="Flashcards" component={FlashcardsScreen} options={{  gestureEnabled: true, fullScreenGestureEnabled: true }}
-          />
+          <Stack.Screen name="Flashcards" component={FlashcardsScreen} options={{  gestureEnabled: true, fullScreenGestureEnabled: true }}/>
         </Stack.Navigator>
       </NavigationContainer>
     </GestureHandlerRootView>

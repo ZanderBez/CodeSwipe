@@ -28,8 +28,8 @@ export default function SignUpScreen({ navigation }: any) {
     }
     try {
       setLoading(true);
-      await registerUser(name, email, password, role);
-      Alert.alert("Success", `Account created as ${role}.`);
+      await registerUser(name, email, password);
+      Alert.alert("Success", `Account created`);
       navigation.navigate("Home");
     } catch (error: any) {
       Alert.alert("Signup Failed", error.message);
@@ -71,33 +71,6 @@ export default function SignUpScreen({ navigation }: any) {
                 onChangeText={setPassword}
                 secureTextEntry
               />
-
-              <View style={styles.roleRow}>
-                <TouchableOpacity
-                  style={[
-                    styles.roleButton,
-                    styles.roleUser,
-                    role === "user" && styles.roleUserActive
-                  ]}
-                  onPress={() => setRole("user")}
-                  disabled={loading}
-                >
-                  <Text style={[styles.roleUserText, role === "user" && styles.roleUserTextActive]}>User</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[
-                    styles.roleButton,
-                    styles.roleAdmin,
-                    role === "admin" && styles.roleAdminActive
-                  ]} 
-                  onPress={() => setRole("admin")}
-                  disabled={loading}
-                >
-                  <Text style={[styles.roleAdminText, role === "admin" && styles.roleAdminTextActive]}>Admin</Text>
-                </TouchableOpacity>
-              </View>
-
               <TouchableOpacity
                 style={[styles.signUpButton, loading && { opacity: 0.6 }]}
                 onPress={handleSignUp}

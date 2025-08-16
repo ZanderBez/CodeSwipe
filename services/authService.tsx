@@ -2,7 +2,7 @@ import { auth, db } from "../firebase";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, UserCredential, updateProfile, GoogleAuthProvider, signInWithPopup, signInWithCredential, setPersistence, browserLocalPersistence } from "firebase/auth";
 import { doc, setDoc, getDoc, updateDoc, serverTimestamp } from "firebase/firestore";
 
-export const registerUser = async (name: string, email: string, password: string, role: "user" | "admin"): Promise<UserCredential> => {
+export const registerUser = async (name: string, email: string, password: string): Promise<UserCredential> => {
   const cred = await createUserWithEmailAndPassword(auth, email, password);
   await updateProfile(cred.user, { displayName: name, photoURL: null as any });
   await setDoc(doc(db, "users", cred.user.uid), {
@@ -10,7 +10,6 @@ export const registerUser = async (name: string, email: string, password: string
     email: cred.user.email,
     photoURL: null,
     createdAt: serverTimestamp(),
-    role
   });
   return cred;
 };

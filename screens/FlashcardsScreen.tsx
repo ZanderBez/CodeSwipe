@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image, Platform, BackHandler } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Image, Platform, BackHandler, Animated } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Swiper from "react-native-deck-swiper";
+import { Ionicons } from "@expo/vector-icons";
 import { fetchDeckCards } from "../services/flashcardService";
 import { CardDoc, DeckId } from "../types/flashcards";
 import { THEMES } from "../services/themes";
@@ -10,6 +11,9 @@ type Mode = "intro" | "quiz" | "score";
 type Phase = "preview" | "answers";
 
 const validIds: DeckId[] = ["beginner", "intermediate", "advanced", "nolifers"];
+const PREVIEW_SECS = 10;
+const ANSWER_SECS = 15;
+const FADE_MS = 160;
 
 function normalizeDeckId(input: any): DeckId {
   if (typeof input !== "string") return "beginner";
@@ -17,9 +21,6 @@ function normalizeDeckId(input: any): DeckId {
   if (validIds.includes(id as DeckId)) return id as DeckId;
   return "beginner";
 }
-
-const PREVIEW_SECS = 10;
-const ANSWER_SECS = 15;
 
 export default function FlashcardsScreen({ route, navigation }: any) {
   const p = route?.params ?? {};
@@ -33,9 +34,9 @@ export default function FlashcardsScreen({ route, navigation }: any) {
   const [picked, setPicked] = useState<number | null>(null);
   const [correct, setCorrect] = useState(0);
   const [timeLeft, setTimeLeft] = useState(PREVIEW_SECS);
-  const [revealTransition, setRevealTransition] = useState(false);
 
-  const swiperRef = useRef<Swiper<CardDoc>>(null);
+  const swiperRef = useRef<Swiper<CardDoc | undefined>>(null);
+  const fade = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     fetchDeckCards(deckId).then(setCards);
@@ -43,24 +44,25 @@ export default function FlashcardsScreen({ route, navigation }: any) {
 
   useEffect(() => {
     if (mode !== "quiz") return;
-    setTimeLeft(phase === "preview" ? PREVIEW_SECS : ANSWER_SECS);
-    const id = setInterval(() => setTimeLeft(t => t - 1), 1000);
+    const id = setInterval(() => {
+      setTimeLeft((t) => {
+        if (phase === "preview") return Math.max(0, t - 1);
+        if (phase === "answers" && picked === null) return Math.max(0, t - 1);
+        return t;
+      });
+    }, 1000);
     return () => clearInterval(id);
-  }, [mode, phase, idx]);
+  }, [mode, phase, picked]);
 
   useEffect(() => {
     if (mode !== "quiz") return;
-    if (timeLeft > 0) return;
-    if (phase === "preview") {
-      setPhase("answers");
-      setTimeLeft(ANSWER_SECS);
-      setRevealTransition(true);
-      requestAnimationFrame(() => swiperRef.current?.swipeBack());
-      setTimeout(() => setRevealTransition(false), 220);
-    } else {
-      finishQuestion(null);
+    if (phase === "preview" && timeLeft <= 0) {
+      swiperRef.current?.swipeLeft();
     }
-  }, [timeLeft, mode, phase]);
+    if (phase === "answers" && timeLeft <= 0 && picked === null) {
+      proceedAfterPick();
+    }
+  }, [timeLeft, phase, mode, picked]);
 
   useEffect(() => {
     navigation.setOptions({
@@ -77,32 +79,49 @@ export default function FlashcardsScreen({ route, navigation }: any) {
     setCorrect(0);
     setPicked(null);
     setPhase("preview");
+    setTimeLeft(PREVIEW_SECS);
+    fade.setValue(1);
     setMode("quiz");
+  };
+
+  const proceedAfterPick = () => {
+    const last = idx + 1 >= cards.length;
+    if (last) {
+      setMode("score");
+      return;
+    }
+    setIdx((i) => i + 1);
+    setPhase("preview");
+    setPicked(null);
+    fade.setValue(1);
+    setTimeLeft(PREVIEW_SECS);
   };
 
   const finishQuestion = (choice: number | null) => {
     const card = cards[idx];
     const ok = choice !== null && card && choice === card.correctIndex;
-    if (ok) setCorrect(c => c + 1);
-    setTimeout(() => nextCard(), 1000);
+    if (ok) setCorrect((c) => c + 1);
+    setPicked(choice as number | null);
   };
 
-  const nextCard = () => {
-    const last = idx + 1 >= cards.length;
-    if (last) { setMode("score"); return; }
-    setIdx(i => i + 1);
-    setPhase("preview");
-    setPicked(null);
+  const revealAnswers = () => {
+    setPhase("answers");
+    setTimeLeft(ANSWER_SECS);
+    fade.setValue(0);
+    Animated.timing(fade, { toValue: 1, duration: FADE_MS, useNativeDriver: true }).start();
   };
 
   const progressText = useMemo(() => `${Math.min(idx + 1, cards.length)} / ${cards.length || 10}`, [idx, cards.length]);
-
   const current = cards[idx];
 
-  return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.root}>
+  const onEyePress = () => {
+    if (phase === "preview") revealAnswers();
+    else if (picked !== null) proceedAfterPick();
+  };
 
+  return (
+    <SafeAreaView edges={mode === "intro" ? ["top", "bottom", "left", "right"] : ["top", "bottom"]} style={styles.safeArea}>
+      <View style={styles.root}>
         {mode === "intro" && (
           <View style={styles.introRow}>
             <View style={styles.introLeft}>
@@ -126,99 +145,123 @@ export default function FlashcardsScreen({ route, navigation }: any) {
 
         {mode === "quiz" && (
           <>
-            <View style={styles.topBar}>
-              <Text style={styles.topTitle}>{theme.title}</Text>
-              <Text style={styles.topProgress}>{progressText}</Text>
+            <View style={styles.header}>
+              <TouchableOpacity onPress={() => navigation.goBack()} style={[styles.headerBack, { borderColor: theme.accent }]}>
+                <Text style={[styles.headerBackIcon, { color: theme.accent }]}>←</Text>
+              </TouchableOpacity>
+              <View style={styles.headerCenter}>
+                <Text style={styles.topTitle}>{theme.title}</Text>
+                <Text style={styles.topProgress}>{progressText}</Text>
+              </View>
+              <View style={{ width: 40 }} />
             </View>
 
             <View style={styles.timerTrack}>
-              <View style={[styles.timerFill, { width: `${(timeLeft / (phase === "preview" ? PREVIEW_SECS : ANSWER_SECS)) * 100}%` }]} />
-              <Text style={styles.timerText}>{timeLeft}s</Text>
+              <View
+                style={[
+                  styles.timerFill,
+                  {
+                    backgroundColor: theme.danger,
+                    width:
+                      phase === "preview"
+                        ? `${Math.max(0, (timeLeft / PREVIEW_SECS) * 100)}%`
+                        : picked === null
+                        ? `${Math.max(0, (timeLeft / ANSWER_SECS) * 100)}%`
+                        : "0%"
+                  }
+                ]}
+              />
+              <Text style={styles.timerText}>
+                {phase === "preview" ? `${Math.max(0, timeLeft)}s` : picked === null ? `${Math.max(0, timeLeft)}s` : " "}
+              </Text>
             </View>
 
             <View style={styles.deckWrap}>
-              <View style={styles.sideIndicatorLeft}>
-                <Text style={styles.sideIcon}>✖</Text>
-                <Text style={styles.sideHint}>Swipe left</Text>
-              </View>
-              <View style={styles.sideIndicatorRight}>
-                <Text style={styles.sideIcon}>👁</Text>
-                <Text style={styles.sideHint}>Swipe right</Text>
+              <View pointerEvents="box-none" style={styles.sideZone}>
+                <TouchableOpacity onPress={proceedAfterPick} activeOpacity={0.9} style={styles.sideBtnLeft}>
+                  <Ionicons name="close" size={24} color="#FFFFFF" />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={onEyePress} activeOpacity={0.9} style={[styles.sideBtnRight, { backgroundColor: theme.accent }]}>
+                  <Ionicons name="eye" size={24} color="#FFFFFF" />
+                </TouchableOpacity>
               </View>
 
-              <Swiper
-                ref={swiperRef}
-                cards={cards}
-                cardIndex={idx}
-                containerStyle={styles.swiperContainer}
-                renderCard={() =>
-                  current ? (
-                    <View style={styles.card}>
-                      {phase === "preview" ? (
+              {phase === "preview" ? (
+                <Swiper
+                  ref={swiperRef}
+                  cards={cards}
+                  cardIndex={idx}
+                  backgroundColor="transparent"
+                  stackSize={4}
+                  stackScale={14}
+                  stackSeparation={16}
+                  cardVerticalMargin={10}
+                  disableTopSwipe
+                  disableBottomSwipe
+                  onSwipedLeft={proceedAfterPick}
+                  onSwipedRight={revealAnswers}
+                  onSwipedAll={() => {}}
+                  containerStyle={styles.swiperContainer}
+                  cardStyle={styles.swiperCardStyle}
+                  renderCard={(card: CardDoc | undefined) =>
+                    card ? (
+                      <View style={styles.card}>
                         <View style={styles.previewCenter}>
-                          <Text style={styles.q}>{current.question}</Text>
+                          <Text style={styles.q}>{card.question}</Text>
                         </View>
-                      ) : (
-                        <View>
-                          <Text style={[styles.q, { marginBottom: 12 }]}>{current.question}</Text>
-                          {current.options.map((opt, i) => {
-                            const show = picked !== null;
-                            const isOk = i === current.correctIndex;
-                            const wasPicked = picked === i;
-                            const bg =
-                              show && isOk ? { backgroundColor: theme.accent } :
-                              show && wasPicked && !isOk ? { backgroundColor: theme.danger } :
-                              styles.optNeutral;
-                            return (
-                              <TouchableOpacity
-                                key={i}
-                                disabled={picked !== null || revealTransition}
-                                onPress={() => { setPicked(i); finishQuestion(i); }}
-                                style={[styles.opt, bg]}
-                                activeOpacity={0.9}
-                              >
-                                <Text style={styles.optText}>{String.fromCharCode(97 + i)}) {opt}</Text>
-                              </TouchableOpacity>
-                            );
-                          })}
-                          {picked !== null && current.explanation ? (
-                            <View style={styles.explain}>
-                              <Text style={styles.explainText}>{current.explanation}</Text>
-                            </View>
-                          ) : null}
+                      </View>
+                    ) : (
+                      <View style={styles.fallback}>
+                        <Text style={styles.loading}>Loading…</Text>
+                      </View>
+                    )
+                  }
+                  animateOverlayLabelsOpacity
+                  useViewOverflow={Platform.OS === "ios"}
+                />
+              ) : (
+                <Animated.View style={[styles.card, { opacity: fade }]}>
+                  {current ? (
+                    <View>
+                      <Text style={[styles.q, { marginBottom: 12 }]}>{current.question}</Text>
+                      {current.options.map((opt, i) => {
+                        const show = picked !== null;
+                        const isOk = i === current.correctIndex;
+                        const wasPicked = picked === i;
+                        const bg =
+                          show && isOk ? { backgroundColor: theme.accent } :
+                          show && wasPicked && !isOk ? { backgroundColor: theme.danger } :
+                          styles.optNeutral;
+                        return (
+                          <TouchableOpacity
+                            key={i}
+                            disabled={picked !== null || timeLeft <= 0}
+                            onPress={() => { if (picked === null && timeLeft > 0) finishQuestion(i); }}
+                            style={[styles.opt, bg]}
+                            activeOpacity={0.9}
+                          >
+                            <Text style={styles.optText}>{String.fromCharCode(97 + i)}) {opt}</Text>
+                          </TouchableOpacity>
+                        );
+                      })}
+                      {picked !== null && current.explanation ? (
+                        <View style={styles.explain}>
+                          <Text style={styles.explainText}>{current.explanation}</Text>
                         </View>
+                      ) : null}
+                      {picked !== null && (
+                        <TouchableOpacity style={[styles.nextBtn, { backgroundColor: theme.accent }]} onPress={proceedAfterPick}>
+                          <Text style={styles.nextBtnText}>Next</Text>
+                        </TouchableOpacity>
                       )}
                     </View>
                   ) : (
-                    <View style={styles.fallback}><Text style={styles.loading}>Loading…</Text></View>
-                  )
-                }
-                backgroundColor="transparent"
-                stackSize={4}
-                stackScale={14}
-                stackSeparation={16}
-                cardVerticalMargin={10}
-                disableTopSwipe
-                disableBottomSwipe
-                onSwipedLeft={() => {
-                  if (phase === "preview") finishQuestion(null);
-                  else finishQuestion(null);
-                }}
-                onSwipedRight={() => {
-                  if (phase === "preview") {
-                    setPhase("answers");
-                    setTimeLeft(ANSWER_SECS);
-                    setRevealTransition(true);
-                    requestAnimationFrame(() => swiperRef.current?.swipeBack());
-                    setTimeout(() => setRevealTransition(false), 220);
-                  } else {
-                    finishQuestion(null);
-                  }
-                }}
-                onSwipedAll={() => setMode("score")}
-                animateOverlayLabelsOpacity
-                useViewOverflow={Platform.OS === "ios"}
-              />
+                    <View style={styles.fallback}>
+                      <Text style={styles.loading}>Loading…</Text>
+                    </View>
+                  )}
+                </Animated.View>
+              )}
             </View>
           </>
         )}
@@ -238,7 +281,6 @@ export default function FlashcardsScreen({ route, navigation }: any) {
             </View>
           </View>
         )}
-
       </View>
     </SafeAreaView>
   );
@@ -308,7 +350,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000",
+    shadowColor: "#000000",
     shadowOpacity: 0.15,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 8 },
@@ -332,46 +374,90 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     fontSize: 16
   },
-  topBar: {
+  header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 8
+    marginBottom: 6
+  },
+  headerBack: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 2,
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  headerBackIcon: {
+    fontSize: 16,
+    fontWeight: "800"
+  },
+  headerCenter: {
+    alignItems: "center",
+    justifyContent: "center",
+    flex: 1
   },
   topTitle: {
     color: "#FFFFFF",
-    fontSize: 24,
-    fontWeight: "800"
+    fontSize: 28,
+    fontWeight: "800",
+    letterSpacing: 1
   },
   topProgress: {
     color: "#7AE2CF",
     fontSize: 16,
-    fontWeight: "700"
+    fontWeight: "700",
+    marginTop: 2
   },
   timerTrack: {
-    height: 12,
+    height: 14,
     backgroundColor: "#1B1B1B",
     borderRadius: 999,
     overflow: "hidden",
-    marginBottom: 10,
+    marginBottom: 12,
     position: "relative"
   },
   timerFill: {
     position: "absolute",
     left: 0,
     top: 0,
-    bottom: 0,
-    backgroundColor: "#FD5308"
+    bottom: 0
   },
   timerText: {
     position: "absolute",
     right: 8,
-    top: -2,
+    top: -1,
     color: "#FFFFFF",
     fontWeight: "700"
   },
   deckWrap: {
     flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%"
+  },
+  sideZone: {
+    position: "absolute",
+    width: "100%",
+    zIndex: 10,
+    top: "50%",
+    transform: [{ translateY: -28 }],
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 14
+  },
+  sideBtnLeft: {
+    width: 56,
+    height: 56,
+    borderRadius: 14,
+    backgroundColor: "#FD5308",
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  sideBtnRight: {
+    width: 56,
+    height: 56,
+    borderRadius: 14,
     alignItems: "center",
     justifyContent: "center"
   },
@@ -381,32 +467,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingTop: 4
   },
-  sideIndicatorLeft: {
-    position: "absolute",
-    left: 10,
-    top: "50%",
-    transform: [{ translateY: -30 }],
-    alignItems: "center",
-    zIndex: 5
-  },
-  sideIndicatorRight: {
-    position: "absolute",
-    right: 10,
-    top: "50%",
-    transform: [{ translateY: -30 }],
-    alignItems: "center",
-    zIndex: 5
-  },
-  sideIcon: {
-    color: "#FFFFFF",
-    fontSize: 22,
-    fontWeight: "800",
-    marginBottom: 2
-  },
-  sideHint: {
-    color: "#FFFFFF",
-    fontSize: 10,
-    opacity: 0.8
+  swiperCardStyle: {
+    alignSelf: "center"
   },
   card: {
     width: "68%",
@@ -415,7 +477,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 16,
     alignSelf: "center",
-    shadowColor: "#000",
+    shadowColor: "#000000",
     shadowOpacity: 0.18,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 8 },
@@ -460,6 +522,17 @@ const styles = StyleSheet.create({
     color: "#333333",
     fontSize: 13
   },
+  nextBtn: {
+    marginTop: 14,
+    height: 44,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  nextBtnText: {
+    color: "#FFFFFF",
+    fontWeight: "800"
+  },
   fallback: {
     flex: 1,
     alignItems: "center",
@@ -485,8 +558,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 16,
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.12,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 6 },
     elevation: 6
