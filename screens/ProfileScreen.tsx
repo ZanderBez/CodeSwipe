@@ -1,54 +1,76 @@
-import React, { useEffect, useState } from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Platform, Alert, Image } from "react-native";
-import Sidebar from "../components/Sidebar";
-import { auth, db } from "../firebase";
-import { doc, onSnapshot, setDoc } from "firebase/firestore";
-import { updateEmail, updatePassword, updateProfile } from "firebase/auth";
-import { Ionicons } from "@expo/vector-icons";
+import React, { useEffect, useState } from "react"
+import { SafeAreaView } from "react-native-safe-area-context"
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Platform, Alert, Image, ActivityIndicator } from "react-native"
+import Sidebar from "../components/Sidebar"
+import { auth, db } from "../firebase"
+import { doc, onSnapshot, setDoc } from "firebase/firestore"
+import { updateProfile, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth"
+import { Ionicons } from "@expo/vector-icons"
 
 export default function ProfileScreen({ navigation }: any) {
-  const [name, setName] = useState("");
-  const [displayName, setDisplayName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [avatarUrl, setAvatarUrl] = useState("");
+  const [name, setName] = useState("")
+  const [displayName, setDisplayName] = useState("")
+  const [newPassword, setNewPassword] = useState("")
+  const [currentPassword, setCurrentPassword] = useState("")
+  const [avatarUrl, setAvatarUrl] = useState("")
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    const u = auth.currentUser;
-    if (!u) return;
-    setEmail(u.email || "");
-    setDisplayName(u.displayName || "");
-    const ref = doc(db, "users", u.uid);
-    const unsubcribe = onSnapshot(ref, (snap) => {
-      const d: any = snap.data() || {};
-      if (typeof d.name === "string") setName(d.name);
-      if (typeof d.photoURL === "string") setAvatarUrl(d.photoURL);
-      if (!displayName && d.name) setDisplayName(d.name);
-    });
-    return unsubcribe;
-  }, []);
+    const u = auth.currentUser
+    if (!u) return
+    setDisplayName(u.displayName || "")
+    const ref = doc(db, "users", u.uid)
+    const unsub = onSnapshot(ref, (snap) => {
+      const d: any = snap.data() || {}
+      if (typeof d.name === "string") setName(d.name)
+      if (typeof d.photoURL === "string") setAvatarUrl(d.photoURL)
+      if (!displayName && d.name) setDisplayName(d.name)
+    })
+    return unsub
+  }, [])
+
+  const reauthIfNeeded = async () => {
+    const u = auth.currentUser
+    if (!u) throw new Error("Not signed in")
+    if (!u.email) throw new Error("Missing current email")
+    if (!currentPassword) throw new Error("Enter your current password to continue")
+    const cred = EmailAuthProvider.credential(u.email, currentPassword)
+    await reauthenticateWithCredential(u, cred)
+  }
 
   const handleSave = async () => {
-    const u = auth.currentUser;
+    const u = auth.currentUser
     if (!u) {
-      Alert.alert("Not signed in");
-      return;
+      Alert.alert("Not signed in")
+      return
     }
+    setSaving(true)
     try {
-      if (email && email !== (u.email || "")) await updateEmail(u, email);
-      if (password) await updatePassword(u, password);
-      await updateProfile(u, { displayName, photoURL: avatarUrl || null });
+      const wantsPasswordChange = !!newPassword
+      if (wantsPasswordChange) {
+        await reauthIfNeeded()
+        await updatePassword(u, newPassword)
+        setNewPassword("")
+        setCurrentPassword("")
+        Alert.alert("Password updated", "Your password has been changed.")
+      }
+      if (displayName !== (u.displayName || "") || avatarUrl !== (u.photoURL || "")) {
+        await updateProfile(u, { displayName, photoURL: avatarUrl || null })
+      }
       await setDoc(
         doc(db, "users", u.uid),
-        { name: displayName || name || "", email, photoURL: avatarUrl || null },
+        { name: displayName || name || "", email: u.email || "", photoURL: avatarUrl || null },
         { merge: true }
-      );
-      Alert.alert("Saved", "Profile updated");
+      )
+      if (!wantsPasswordChange) {
+        Alert.alert("Saved", "Profile updated")
+      }
     } catch (e: any) {
-      Alert.alert("Error", e.message || "Update failed");
+      Alert.alert("Error", e?.message || "Update failed")
+    } finally {
+      setSaving(false)
     }
-  };
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -60,15 +82,6 @@ export default function ProfileScreen({ navigation }: any) {
             <View style={styles.leftPane}>
               <TextInput
                 style={styles.input}
-                placeholder="Email"
-                placeholderTextColor="#7B8B8B"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-              <TextInput
-                style={styles.input}
                 placeholder="Nickname"
                 placeholderTextColor="#7B8B8B"
                 value={displayName}
@@ -76,21 +89,42 @@ export default function ProfileScreen({ navigation }: any) {
               />
               <TextInput
                 style={styles.input}
-                placeholder="Password"
+                placeholder="Current password"
                 placeholderTextColor="#7B8B8B"
-                value={password}
-                onChangeText={setPassword}
+                value={currentPassword}
+                onChangeText={setCurrentPassword}
                 secureTextEntry
               />
-              <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
-                <Text style={styles.saveText}>Save</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="New password"
+                placeholderTextColor="#7B8B8B"
+                value={newPassword}
+                onChangeText={setNewPassword}
+                secureTextEntry
+              />
+              <TouchableOpacity
+                style={[styles.saveBtn, saving && { opacity: 0.7 }]}
+                onPress={handleSave}
+                disabled={saving}
+              >
+                {saving ? (
+                  <Text style={styles.saveText}>Saving...</Text>
+                ) : (
+                  <Text style={styles.saveText}>Save</Text>
+                )}
               </TouchableOpacity>
             </View>
             <View style={styles.rightPane}>
               <View style={styles.avatarWrap}>
                 <View style={styles.avatarOuter} />
                 {avatarUrl ? (
-                  <Image key={avatarUrl} source={{ uri: avatarUrl }} style={styles.avatarImage} onError={() => Alert.alert("Image error", "Could not load that URL")} />
+                  <Image
+                    key={avatarUrl}
+                    source={{ uri: avatarUrl }}
+                    style={styles.avatarImage}
+                    onError={() => Alert.alert("Image error", "Could not load that URL")}
+                  />
                 ) : (
                   <View style={styles.avatarInner} />
                 )}
@@ -104,13 +138,15 @@ export default function ProfileScreen({ navigation }: any) {
         </View>
       </View>
     </SafeAreaView>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#000000"
+    backgroundColor: "#000000",
+    paddingLeft: Platform.OS === "android" ? 10 : 0,
+    paddingRight: Platform.OS === "android" ? 10 : 0
   },
   root: {
     flex: 1,
@@ -219,4 +255,4 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     elevation: 4
   }
-});
+})

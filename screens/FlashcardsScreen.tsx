@@ -6,6 +6,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { fetchDeckCards } from "../services/flashcardService";
 import { CardDoc, DeckId } from "../types/flashcards";
 import { THEMES } from "../services/themes";
+import { auth } from "../firebase";
+import { saveQuizResult } from "../services/progressService";
 
 type Mode = "intro" | "quiz" | "score";
 type Phase = "preview" | "answers";
@@ -84,9 +86,13 @@ export default function FlashcardsScreen({ route, navigation }: any) {
     setMode("quiz");
   };
 
-  const proceedAfterPick = () => {
+  const proceedAfterPick = async () => {
     const last = idx + 1 >= cards.length;
     if (last) {
+      const u = auth.currentUser;
+      if (u) {
+        await saveQuizResult(u.uid, deckId, correct, cards.length);
+      }
       setMode("score");
       return;
     }
@@ -129,7 +135,7 @@ export default function FlashcardsScreen({ route, navigation }: any) {
               <View style={[styles.introUnderline, { backgroundColor: theme.accent }]} />
               <Text style={styles.introBlurb}>{theme.blurb}</Text>
               <TouchableOpacity onPress={() => navigation.goBack()} style={[styles.smallBack, { backgroundColor: theme.accent }]}>
-                <Text style={styles.smallBackIcon}>←</Text>
+                <Ionicons name="arrow-back" size={20} color="#000000" />
               </TouchableOpacity>
             </View>
             <View style={styles.introRight}>
@@ -143,19 +149,25 @@ export default function FlashcardsScreen({ route, navigation }: any) {
           </View>
         )}
 
+        {(mode === "quiz" || mode === "score") && (
+          <View style={styles.header}>
+            {mode !== "quiz" ? (
+              <TouchableOpacity onPress={() => navigation.goBack()} style={[styles.headerBack, { borderColor: theme.accent }]}>
+                <Ionicons name="arrow-back" size={20} color={theme.accent} />
+              </TouchableOpacity>
+            ) : (
+              <View style={{ width: 36, height: 36 }} />
+            )}
+            <View style={styles.headerCenter}>
+              <Text style={styles.topTitle}>{theme.title}</Text>
+              {mode === "quiz" && <Text style={styles.topProgress}>{progressText}</Text>}
+            </View>
+            <View style={{ width: 40 }} />
+          </View>
+        )}
+
         {mode === "quiz" && (
           <>
-            <View style={styles.header}>
-              <TouchableOpacity onPress={() => navigation.goBack()} style={[styles.headerBack, { borderColor: theme.accent }]}>
-                <Text style={[styles.headerBackIcon, { color: theme.accent }]}>←</Text>
-              </TouchableOpacity>
-              <View style={styles.headerCenter}>
-                <Text style={styles.topTitle}>{theme.title}</Text>
-                <Text style={styles.topProgress}>{progressText}</Text>
-              </View>
-              <View style={{ width: 40 }} />
-            </View>
-
             <View style={styles.timerTrack}>
               <View
                 style={[
@@ -268,7 +280,7 @@ export default function FlashcardsScreen({ route, navigation }: any) {
 
         {mode === "score" && (
           <View style={styles.scoreWrap}>
-            <Text style={styles.scoreTitle}>{theme.title}</Text>
+            <Text>{theme.title}</Text>
             <View style={styles.scoreCard}>
               <Text style={styles.scoreLabel}>Your Score</Text>
               <View style={styles.scoreTrack}>
@@ -332,11 +344,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center"
   },
-  smallBackIcon: {
-    color: "#000000",
-    fontSize: 18,
-    fontWeight: "800"
-  },
   introRight: {
     flex: 1,
     alignItems: "center"
@@ -387,10 +394,6 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     alignItems: "center",
     justifyContent: "center"
-  },
-  headerBackIcon: {
-    fontSize: 16,
-    fontWeight: "800"
   },
   headerCenter: {
     alignItems: "center",
@@ -473,11 +476,12 @@ const styles = StyleSheet.create({
   card: {
     width: "68%",
     minHeight: Platform.OS === "ios" ? 220 : 210,
-    backgroundColor: "#FFFFFF",
     borderRadius: 20,
+    backgroundColor: "#000000",
+    borderColor: "#7AE2CF",
+    borderWidth: 1,
     padding: 16,
     alignSelf: "center",
-    shadowColor: "#000000",
     shadowOpacity: 0.18,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 8 },
@@ -491,6 +495,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8
   },
   q: {
+    color: "#FFFFFF",
     textAlign: "center",
     fontSize: 18,
     fontWeight: "800"
@@ -546,15 +551,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center"
   },
-  scoreTitle: {
-    color: "#FFFFFF",
-    fontSize: 24,
-    fontWeight: "800",
-    marginBottom: 12
-  },
   scoreCard: {
     width: "70%",
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#000000ff",
+    borderColor: "#7AE2CF",
+    borderWidth: 1,
     borderRadius: 20,
     padding: 16,
     alignItems: "center",
@@ -563,6 +564,7 @@ const styles = StyleSheet.create({
     elevation: 6
   },
   scoreLabel: {
+    color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "700",
     marginBottom: 8
@@ -580,10 +582,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#FD5308"
   },
   scoreText: {
+    color: "#ffffffff",
     fontWeight: "800",
     marginBottom: 12
   },
   homeBtn: {
+    width: "40%",
     height: 44,
     borderRadius: 22,
     paddingHorizontal: 24,

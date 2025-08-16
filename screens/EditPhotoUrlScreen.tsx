@@ -1,29 +1,55 @@
 import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, Alert } from "react-native";
+import { View, Text, Image, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 import { auth, db } from "../firebase";
 import { doc, setDoc } from "firebase/firestore";
 import { updateProfile } from "firebase/auth";
 
-export default function EditPhotoUrlScreen({ navigation }: any) {
-  const [url, setUrl] = useState("");
+export default function EditPhotoScreen({ navigation }: any) {
+  const [imageUri, setImageUri] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
-  const onSave = async () => {
-    const cleaned = (url || "").trim();
-    if (!cleaned || !/^https?:\/\/.+/i.test(cleaned)) {
-      Alert.alert("Invalid URL", "Please paste a full https:// image URL");
+  const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Permission required", "We need access to your photos to set your profile picture.");
       return;
     }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      setImageUri(result.assets[0].uri);
+    }
+  };
+
+  const onSave = async () => {
+    if (!imageUri) {
+      Alert.alert("No image selected", "Please choose an image first.");
+      return;
+    }
+
     const u = auth.currentUser;
     if (!u) {
       Alert.alert("Not signed in");
       return;
     }
+
     try {
-      await updateProfile(u, { photoURL: cleaned });
-      await setDoc(doc(db, "users", u.uid), { photoURL: cleaned }, { merge: true });
+      setSaving(true);
+      await updateProfile(u, { photoURL: imageUri });
+      await setDoc(doc(db, "users", u.uid), { photoURL: imageUri }, { merge: true });
+
+      setSaving(false);
       navigation.goBack();
     } catch (e: any) {
+      setSaving(false);
       Alert.alert("Error", e.message || "Could not update photo");
     }
   };
@@ -31,22 +57,30 @@ export default function EditPhotoUrlScreen({ navigation }: any) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.wrap}>
-        <Text style={styles.title}>Paste Image URL</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="https://example.com/photo.jpg"
-          placeholderTextColor="#7B8B8B"
-          value={url}
-          onChangeText={setUrl}
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
+        <Text style={styles.title}>Choose Profile Picture</Text>
+
+        {imageUri ? (
+          <Image source={{ uri: imageUri }} style={styles.preview} />
+        ) : (
+          <View style={styles.placeholder}>
+            <Text style={styles.placeholderText}>No image selected</Text>
+          </View>
+        )}
+
+        <TouchableOpacity style={styles.pickButton} onPress={pickImage}>
+          <Text style={styles.pickButtonText}>Pick from Gallery</Text>
+        </TouchableOpacity>
+
         <View style={styles.actions}>
           <TouchableOpacity style={styles.cancel} onPress={() => navigation.goBack()}>
             <Text style={styles.cancelText}>Cancel</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.save} onPress={onSave}>
-            <Text style={styles.saveText}>Save</Text>
+          <TouchableOpacity style={styles.save} onPress={onSave} disabled={saving}>
+            {saving ? (
+              <ActivityIndicator color="#0B0B0B" />
+            ) : (
+              <Text style={styles.saveText}>Save</Text>
+            )}
           </TouchableOpacity>
         </View>
       </View>
@@ -57,56 +91,77 @@ export default function EditPhotoUrlScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#000000"
+    backgroundColor: "#000000",
   },
   wrap: {
     flex: 1,
     paddingHorizontal: 28,
     paddingVertical: 20,
-    justifyContent: "center"
+    justifyContent: "center",
   },
   title: {
     color: "#FFFFFF",
     fontSize: 24,
     fontWeight: "800",
-    marginBottom: 14
+    marginBottom: 14,
   },
-  input: {
-    borderWidth: 2,
-    borderColor: "#7AE2CF",
-    color: "#FFFFFF",
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: Platform.OS === "ios" ? 14 : 12,
-    fontSize: 16,
-    backgroundColor: "#000000",
-    marginBottom: 14
+  preview: {
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    alignSelf: "center",
+    marginBottom: 16,
+  },
+  placeholder: {
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    backgroundColor: "#1A1A1A",
+    alignSelf: "center",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 16,
+  },
+  placeholderText: {
+    color: "#7B8B8B",
+    fontSize: 14,
+  },
+  pickButton: {
+    backgroundColor: "#7AE2CF",
+    paddingVertical: 12,
+    borderRadius: 10,
+    marginBottom: 20,
+  },
+  pickButtonText: {
+    color: "#0B0B0B",
+    fontWeight: "800",
+    textAlign: "center",
   },
   actions: {
     flexDirection: "row",
     justifyContent: "flex-end",
-    gap: 10
+    gap: 10,
   },
   cancel: {
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 10,
-    backgroundColor: "#1A1A1A"
+    backgroundColor: "#1A1A1A",
   },
   cancelText: {
     color: "#FFFFFF",
     fontSize: 14,
-    fontWeight: "600"
+    fontWeight: "600",
   },
   save: {
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 10,
-    backgroundColor: "#7AE2CF"
+    backgroundColor: "#7AE2CF",
   },
   saveText: {
     color: "#0B0B0B",
     fontSize: 14,
-    fontWeight: "800"
-  }
+    fontWeight: "800",
+  },
 });

@@ -1,51 +1,48 @@
-import React, { useState, useEffect, memo } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import Sidebar from "../components/Sidebar";
-import { auth, db } from "../firebase";
-import { doc, getDoc } from "firebase/firestore";
+import React, { useState, useEffect } from "react"
+import { View, Text, TouchableOpacity, StyleSheet, Image, Platform } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
+import Sidebar from "../components/Sidebar"
+import { auth, db } from "../firebase"
+import { doc, getDoc } from "firebase/firestore"
+import { listenUserProgress, DeckProgress } from "../services/progressService"
+import ProgressRow from "../components/ProgressRow"
 
-type DeckId = "beginner" | "intermediate" | "advanced" | "nolifers";
-
-const ProgressRow = memo(({ label, value, max }: { label: string; value: number; max: number }) => {
-  const pct = Math.min((value / Math.max(1, max)) * 100, 100);
-  return (
-    <View style={styles.progressBlock}>
-      <View style={styles.progressHead}>
-        <Text style={styles.progressLabel}>{label}</Text>
-        <Text style={styles.progressCount}>{value}/{max}</Text>
-      </View>
-      <View style={styles.track}>
-        <View style={[styles.fillTeal, { width: `${pct}%` }]} />
-      </View>
-    </View>
-  );
-});
+type DeckId = "beginner" | "intermediate" | "advanced" | "nolifers"
 
 export default function HomeScreen({ navigation }: any) {
-  const [name, setName] = useState<string>("");
+  const [name, setName] = useState<string>("")
+  const [progress, setProgress] = useState<Record<DeckId, DeckProgress | undefined>>({
+    beginner: undefined,
+    intermediate: undefined,
+    advanced: undefined,
+    nolifers: undefined
+  })
 
   useEffect(() => {
     if (auth.currentUser) {
       getDoc(doc(db, "users", auth.currentUser.uid)).then((snap) => {
         if (snap.exists()) {
-          const data = snap.data() as any;
-          setName(data.name || "");
+          const data = snap.data() as any
+          setName(data.name || "")
         }
-      });
+      })
+      const unsub = listenUserProgress(auth.currentUser.uid, (data) => {
+        setProgress((prev) => ({ ...prev, ...data }))
+      })
+      return unsub
     }
-  }, []);
+  }, [])
 
   const progressData = [
-    { label: "Beginner", value: 2, max: 10, deckId: "beginner" as DeckId, title: "Beginner" },
-    { label: "Intermediate", value: 5, max: 10, deckId: "intermediate" as DeckId, title: "Intermediate" },
-    { label: "Advanced", value: 1, max: 10, deckId: "advanced" as DeckId, title: "Advanced" },
-    { label: "No Lifers", value: 8, max: 10, deckId: "nolifers" as DeckId, title: "No Lifers" }
-  ];
+    { label: "Beginner", value: progress.beginner?.bestScore ?? 0, max: progress.beginner?.bestTotal ?? 10, deckId: "beginner" as DeckId, title: "Beginner" },
+    { label: "Intermediate", value: progress.intermediate?.bestScore ?? 0, max: progress.intermediate?.bestTotal ?? 10, deckId: "intermediate" as DeckId, title: "Intermediate" },
+    { label: "Advanced", value: progress.advanced?.bestScore ?? 0, max: progress.advanced?.bestTotal ?? 10, deckId: "advanced" as DeckId, title: "Advanced" },
+    { label: "No Lifers", value: progress.nolifers?.bestScore ?? 0, max: progress.nolifers?.bestTotal ?? 10, deckId: "nolifers" as DeckId, title: "No Lifers" }
+  ]
 
   const goDeck = (deckId: DeckId, title: string) => {
-    navigation.navigate("Flashcards", { deckId, title });
-  };
+    navigation.navigate("Flashcards", { deckId, title })
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -65,25 +62,25 @@ export default function HomeScreen({ navigation }: any) {
             <View style={styles.card}>
               <Text style={styles.cardTitle}>How Brave are you?</Text>
               <View style={styles.grid}>
-                <TouchableOpacity style={styles.gridItem} onPress={() => navigation.navigate("Flashcards", { deckId: "beginner", title: "Beginner" })}>
+                <TouchableOpacity style={styles.gridItem} onPress={() => goDeck("beginner", "Beginner")}>
                   <Image source={require("../assets/card1.png")} style={styles.illustrationImg} resizeMode="cover" />
                   <View style={styles.levelPill}>
                     <Text style={styles.levelPillText}>Beginner</Text>
                   </View>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.gridItem} onPress={() => navigation.navigate("Flashcards", { deckId: "intermediate", title: "Intermediate" })}>
+                <TouchableOpacity style={styles.gridItem} onPress={() => goDeck("intermediate", "Intermediate")}>
                   <Image source={require("../assets/card2.png")} style={styles.illustrationImg} resizeMode="cover" />
                   <View style={styles.levelPill}>
                     <Text style={styles.levelPillText}>Intermediate</Text>
                   </View>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.gridItem} onPress={() => navigation.navigate("Flashcards", { deckId: "advanced", title: "Advanced" })}>
+                <TouchableOpacity style={styles.gridItem} onPress={() => goDeck("advanced", "Advanced")}>
                   <Image source={require("../assets/card3.png")} style={styles.illustrationImg} resizeMode="cover" />
                   <View style={styles.levelPill}>
                     <Text style={styles.levelPillText}>Advanced</Text>
                   </View>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.gridItem} onPress={() => navigation.navigate("Flashcards", { deckId: "nolifers", title: "No Lifers" })}>
+                <TouchableOpacity style={styles.gridItem} onPress={() => goDeck("nolifers", "No Lifers")}>
                   <Image source={require("../assets/card4.png")} style={styles.illustrationImg} resizeMode="cover" />
                   <View style={styles.levelPill}>
                     <Text style={styles.levelPillText}>No Lifers</Text>
@@ -95,13 +92,15 @@ export default function HomeScreen({ navigation }: any) {
         </View>
       </View>
     </SafeAreaView>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#000000"
+    backgroundColor: "#000000",
+    paddingLeft: Platform.OS === "android" ? 10 : 0,
+    paddingRight: Platform.OS === "android" ? 10 : 0
   },
   root: {
     flex: 1,
@@ -115,9 +114,10 @@ const styles = StyleSheet.create({
   cardsRow: {
     flex: 1,
     flexDirection: "row",
-    gap: 20
+    columnGap: 20
   },
   card: {
+    height: "100%",
     flex: 1,
     backgroundColor: "#0E0E0E",
     borderRadius: 22,
@@ -132,52 +132,19 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     letterSpacing: 0.5
   },
-  progressBlock: {
-    marginBottom: 16
-  },
-  progressHead: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 6
-  },
-  progressLabel: {
-    color: "#FFFFFF",
-    fontSize: 14
-  },
-  progressCount: {
-    color: "#FFFFFF",
-    fontSize: 12,
-    opacity: 0.9
-  },
-  track: {
-    height: 16,
-    backgroundColor: "#0B0B0B",
-    borderRadius: 999,
-    overflow: "hidden",
-    borderWidth: 1,
-    borderColor: "#1F1F1F"
-  },
-  fillTeal: {
-    position: "absolute",
-    left: 0,
-    top: 0,
-    bottom: 0,
-    backgroundColor: "#FD5308",
-    borderTopRightRadius: 999,
-    borderBottomRightRadius: 999
-  },
   pillBtn: {
     marginTop: "auto",
+    alignSelf: "stretch",
     backgroundColor: "#7AE2CF",
-    height: 44,
+    height: Platform.OS === "android" ? 34 : 44,
     borderRadius: 22,
     alignItems: "center",
     justifyContent: "center"
   },
   pillBtnText: {
     color: "#ffffffff",
-    fontWeight: "800"
+    fontWeight: "800",
+    fontSize: Platform.OS === "android" ? 13 : 14
   },
   grid: {
     width: "100%",
@@ -187,11 +154,11 @@ const styles = StyleSheet.create({
     rowGap: 12
   },
   gridItem: {
-    maxWidth: "48%",
-    aspectRatio: 1,
+    width: Platform.OS === "android" ? "47.5%" : "48%",
+    aspectRatio: Platform.OS === "android" ? 1.26 : 1,
     backgroundColor: "#ffffffff",
     borderRadius: 16,
-    padding: 10,
+    padding: Platform.OS === "android" ? 8 : 10,
     overflow: "hidden",
     justifyContent: "space-between"
   },
@@ -201,6 +168,7 @@ const styles = StyleSheet.create({
     borderRadius: 12
   },
   levelPill: {
+    width: "100%",
     alignSelf: "center",
     height: 25,
     paddingHorizontal: 14,
@@ -215,4 +183,4 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     fontSize: 11
   }
-});
+})
