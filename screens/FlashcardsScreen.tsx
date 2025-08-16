@@ -7,7 +7,7 @@ import { fetchDeckCards } from "../services/flashcardService";
 import { CardDoc, DeckId } from "../types/flashcards";
 import { THEMES } from "../services/themes";
 import { auth } from "../firebase";
-import { saveQuizResult } from "../services/progressService";
+import { saveQuizResult, recordCorrectCard } from "../services/progressService";
 
 type Mode = "intro" | "quiz" | "score";
 type Phase = "preview" | "answers";
@@ -104,11 +104,15 @@ export default function FlashcardsScreen({ route, navigation }: any) {
   };
 
   const finishQuestion = (choice: number | null) => {
-    const card = cards[idx];
-    const ok = choice !== null && card && choice === card.correctIndex;
-    if (ok) setCorrect((c) => c + 1);
-    setPicked(choice as number | null);
-  };
+    const card = cards[idx]
+    const ok = choice !== null && card && choice === card.correctIndex
+    if (ok) {
+      setCorrect(c => c + 1)
+      const u = auth.currentUser
+      if (u && card) recordCorrectCard(u.uid, deckId, card.id)
+    }
+    setPicked(choice as number | null)
+  }
 
   const revealAnswers = () => {
     setPhase("answers");

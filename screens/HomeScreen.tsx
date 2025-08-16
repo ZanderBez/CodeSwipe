@@ -55,7 +55,7 @@ export default function HomeScreen({ navigation }: any) {
               {progressData.map((row) => (
                 <ProgressRow key={row.label} label={row.label} value={row.value} max={row.max} />
               ))}
-              <TouchableOpacity style={styles.pillBtn} onPress={() => navigation.navigate("Summary")}>
+              <TouchableOpacity style={styles.pillBtn} onPress={() => navigation.navigate("Performance")}>
                 <Text style={styles.pillBtnText}>Details</Text>
               </TouchableOpacity>
             </View>

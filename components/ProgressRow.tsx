@@ -6,16 +6,19 @@ type Props = {
   label: string
   value: number
   max: number
+  textColor?: string
+  barHeight?: number
+  compact?: boolean
 }
 
-function Row({ label, value, max }: Props) {
+function Row({ label, value, max, textColor = "#FFFFFF", barHeight = 16, compact = false }: Props) {
   return (
-    <View style={styles.block}>
+    <View style={[styles.block, compact && styles.blockCompact]}>
       <View style={styles.head}>
-        <Text style={styles.label}>{label}</Text>
-        <Text style={styles.count}>{value}/{max}</Text>
+        <Text style={[styles.label, { color: textColor }]}>{label}</Text>
+        <Text style={[styles.count, { color: textColor }]}>{value}/{max}</Text>
       </View>
-      <ProgressBar value={value} max={max} />
+      <ProgressBar value={value} max={max} height={barHeight} />
     </View>
   )
 }
@@ -26,6 +29,9 @@ const styles = StyleSheet.create({
   block: {
     marginBottom: 16
   },
+  blockCompact: {
+    marginBottom: 10
+  },
   head: {
     flexDirection: "row",
     alignItems: "center",
@@ -33,11 +39,9 @@ const styles = StyleSheet.create({
     marginBottom: 6
   },
   label: {
-    color: "#FFFFFF",
     fontSize: 14
   },
   count: {
-    color: "#FFFFFF",
     fontSize: 12,
     opacity: 0.9
   }

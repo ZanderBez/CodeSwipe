@@ -60,3 +60,9 @@ export function listenUserProgress(uid: string, cb: (data: Record<DeckId, DeckPr
     cb(map as Record<DeckId, DeckProgress>)
   })
 }
+
+export async function recordCorrectCard(uid: string, deckId: string, cardId: string) {
+  const key = `${deckId}:${cardId}`
+  const ref = doc(db, "users", uid)
+  await setDoc(ref, { correctCards: { [key]: true } }, { merge: true })
+}
