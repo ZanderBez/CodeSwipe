@@ -6,7 +6,7 @@ import Sidebar from "../components/Sidebar"
 import ProgressRow from "../components/ProgressRow"
 import CardsRing from "../components/CardsRing"
 import { auth, db } from "../firebase"
-import { doc, getDoc, onSnapshot, collectionGroup, getDocs } from "firebase/firestore"
+import { doc, getDoc, onSnapshot, collectionGroup } from "firebase/firestore"
 import { listenUserProgress, DeckProgress } from "../services/progressService"
 
 type DeckId = "beginner" | "intermediate" | "advanced" | "nolifers"
@@ -18,6 +18,12 @@ const MAX_QUOTE_LENGTH = 100
 
 export default function PerformanceScreen({ navigation }: any) {
   const [name, setName] = useState<string>("")
+  const [deckTotals, setDeckTotals] = useState<Record<DeckId, number>>({
+    beginner: 10,
+    intermediate: 10,
+    advanced: 10,
+    nolifers: 10
+  })
   const [rows, setRows] = useState<RowItem[]>([
     { label: "Beginner", value: 0, max: 10 },
     { label: "Intermediate", value: 0, max: 10 },
@@ -60,17 +66,11 @@ export default function PerformanceScreen({ navigation }: any) {
       setName((data && data.name) || "")
     })
     const unsubProgress = listenUserProgress(auth.currentUser.uid, data => {
-      const map: Record<DeckId, DeckProgress | undefined> = {
-        beginner: data.beginner,
-        intermediate: data.intermediate,
-        advanced: data.advanced,
-        nolifers: data.nolifers
-      }
       setRows([
-        { label: "Beginner", value: map.beginner?.bestScore ?? 0, max: map.beginner?.bestTotal ?? 10 },
-        { label: "Intermediate", value: map.intermediate?.bestScore ?? 0, max: map.intermediate?.bestTotal ?? 10 },
-        { label: "Advanced", value: map.advanced?.bestScore ?? 0, max: map.advanced?.bestTotal ?? 10 },
-        { label: "No Lifers", value: map.nolifers?.bestScore ?? 0, max: map.nolifers?.bestTotal ?? 10 }
+        { label: "Beginner", value: data.beginner?.bestScore ?? 0, max: deckTotals.beginner },
+        { label: "Intermediate", value: data.intermediate?.bestScore ?? 0, max: deckTotals.intermediate },
+        { label: "Advanced", value: data.advanced?.bestScore ?? 0, max: deckTotals.advanced },
+        { label: "No Lifers", value: data.nolifers?.bestScore ?? 0, max: deckTotals.nolifers }
       ])
     })
     const unsubUser = onSnapshot(doc(db, "users", auth.currentUser.uid), snap => {
@@ -79,11 +79,32 @@ export default function PerformanceScreen({ navigation }: any) {
       const n = typeof map === "object" && map ? Object.keys(map).length : 0
       setCorrectCount(n)
     })
-    getDocs(collectionGroup(db, "cards")).then(s => setTotalCards(s.size || 40))
+    const unsubCards = onSnapshot(collectionGroup(db, "cards"), s => {
+      setTotalCards(s.size || 0)
+    })
+    const deckUnsubs: Array<() => void> = []
+    ;(["beginner","intermediate","advanced","nolifers"] as DeckId[]).forEach(id => {
+      const u = onSnapshot(doc(db, "decks", id), d => {
+        const cnt = (d.exists() && typeof d.data().cardCount === "number") ? d.data().cardCount : deckTotals[id]
+        setDeckTotals(prev => {
+          const next = { ...prev, [id]: Math.max(0, Number(cnt || 0)) }
+          setRows(r => [
+            { label: "Beginner", value: r[0]?.value ?? 0, max: next.beginner },
+            { label: "Intermediate", value: r[1]?.value ?? 0, max: next.intermediate },
+            { label: "Advanced", value: r[2]?.value ?? 0, max: next.advanced },
+            { label: "No Lifers", value: r[3]?.value ?? 0, max: next.nolifers }
+          ])
+          return next
+        })
+      })
+      deckUnsubs.push(u)
+    })
     loadShortQuote()
     return () => {
       unsubProgress && unsubProgress()
       unsubUser && unsubUser()
+      unsubCards && unsubCards()
+      deckUnsubs.forEach(fn => fn && fn())
     }
   }, [])
 
@@ -153,6 +174,7 @@ const styles = StyleSheet.create({
   },
   leftCard: {
     flex: 1,
+    height: "100%",
     marginRight: 20,
     paddingBottom: 12
   },

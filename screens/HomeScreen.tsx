@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Image, Platform } from "react
 import { SafeAreaView } from "react-native-safe-area-context"
 import Sidebar from "../components/Sidebar"
 import { auth, db } from "../firebase"
-import { doc, getDoc } from "firebase/firestore"
+import { doc, getDoc, onSnapshot } from "firebase/firestore"
 import { listenUserProgress, DeckProgress } from "../services/progressService"
 import ProgressRow from "../components/ProgressRow"
 
@@ -17,27 +17,41 @@ export default function HomeScreen({ navigation }: any) {
     advanced: undefined,
     nolifers: undefined
   })
+  const [deckTotals, setDeckTotals] = useState<Record<DeckId, number>>({
+    beginner: 10,
+    intermediate: 10,
+    advanced: 10,
+    nolifers: 10
+  })
 
   useEffect(() => {
-    if (auth.currentUser) {
-      getDoc(doc(db, "users", auth.currentUser.uid)).then((snap) => {
-        if (snap.exists()) {
-          const data = snap.data() as any
-          setName(data.name || "")
-        }
+    if (!auth.currentUser) return
+    getDoc(doc(db, "users", auth.currentUser.uid)).then(snap => {
+      const data = snap.data() as any
+      setName((data && data.name) || "")
+    })
+    const unsub = listenUserProgress(auth.currentUser.uid, data => {
+      setProgress(prev => ({ ...prev, ...data }))
+    })
+    const unsubs: Array<() => void> = []
+    ;(["beginner","intermediate","advanced","nolifers"] as DeckId[]).forEach(id => {
+      const u = onSnapshot(doc(db, "decks", id), d => {
+        const cnt = (d.exists() && typeof d.data().cardCount === "number") ? d.data().cardCount : deckTotals[id]
+        setDeckTotals(prev => ({ ...prev, [id]: Math.max(0, Number(cnt || 0)) }))
       })
-      const unsub = listenUserProgress(auth.currentUser.uid, (data) => {
-        setProgress((prev) => ({ ...prev, ...data }))
-      })
-      return unsub
+      unsubs.push(u)
+    })
+    return () => {
+      unsub && unsub()
+      unsubs.forEach(fn => fn && fn())
     }
   }, [])
 
   const progressData = [
-    { label: "Beginner", value: progress.beginner?.bestScore ?? 0, max: progress.beginner?.bestTotal ?? 10, deckId: "beginner" as DeckId, title: "Beginner" },
-    { label: "Intermediate", value: progress.intermediate?.bestScore ?? 0, max: progress.intermediate?.bestTotal ?? 10, deckId: "intermediate" as DeckId, title: "Intermediate" },
-    { label: "Advanced", value: progress.advanced?.bestScore ?? 0, max: progress.advanced?.bestTotal ?? 10, deckId: "advanced" as DeckId, title: "Advanced" },
-    { label: "No Lifers", value: progress.nolifers?.bestScore ?? 0, max: progress.nolifers?.bestTotal ?? 10, deckId: "nolifers" as DeckId, title: "No Lifers" }
+    { label: "Beginner", value: progress.beginner?.bestScore ?? 0, max: deckTotals.beginner, deckId: "beginner" as DeckId, title: "Beginner" },
+    { label: "Intermediate", value: progress.intermediate?.bestScore ?? 0, max: deckTotals.intermediate, deckId: "intermediate" as DeckId, title: "Intermediate" },
+    { label: "Advanced", value: progress.advanced?.bestScore ?? 0, max: deckTotals.advanced, deckId: "advanced" as DeckId, title: "Advanced" },
+    { label: "No Lifers", value: progress.nolifers?.bestScore ?? 0, max: deckTotals.nolifers, deckId: "nolifers" as DeckId, title: "No Lifers" }
   ]
 
   const goDeck = (deckId: DeckId, title: string) => {
@@ -52,7 +66,7 @@ export default function HomeScreen({ navigation }: any) {
           <View style={styles.cardsRow}>
             <View style={styles.card}>
               <Text style={styles.cardTitle}>Code Points</Text>
-              {progressData.map((row) => (
+              {progressData.map(row => (
                 <ProgressRow key={row.label} label={row.label} value={row.value} max={row.max} />
               ))}
               <TouchableOpacity style={styles.pillBtn} onPress={() => navigation.navigate("Performance")}>

@@ -1,19 +1,19 @@
-import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Platform } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { logoutUser } from "../services/authService";
+import React from "react"
+import { View, Text, TouchableOpacity, StyleSheet, Platform } from "react-native"
+import { Ionicons } from "@expo/vector-icons"
+import { logoutUser } from "../services/authService"
 
 type SidebarProps = {
-  name: string;
-  navigation: any;
-  active?: "Home" | "Performance" | "Profile";
-};
+  name: string
+  navigation: any
+  active?: "Home" | "Performance" | "Profile" | "Create"
+}
 
 export default function Sidebar({ name, navigation, active = "Home" }: SidebarProps) {
   const handleLogout = async () => {
-    await logoutUser();
-    navigation.replace("Login");
-  };
+    await logoutUser()
+    navigation.replace("Login")
+  }
 
   return (
     <View style={styles.sidebar}>
@@ -42,11 +42,18 @@ export default function Sidebar({ name, navigation, active = "Home" }: SidebarPr
         <Ionicons name="person-outline" size={22} color={active === "Profile" ? "#0B0B0B" : "#FFFFFF"} />
       </TouchableOpacity>
 
+      <TouchableOpacity
+        style={[styles.navBtn, active === "Create" && styles.navActive]}
+        onPress={() => navigation.navigate("ChooseDeck")}
+      >
+        <Ionicons name="add-circle-outline" size={22} color={active === "Create" ? "#0B0B0B" : "#FFFFFF"} />
+      </TouchableOpacity>
+
       <TouchableOpacity style={[styles.navBtn, styles.logoutBtn]} onPress={handleLogout}>
         <Ionicons name="log-out-outline" size={22} color="#FFFFFF" />
       </TouchableOpacity>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -59,7 +66,8 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === "ios" ? 18 : 10,
     paddingBottom: 18,
     position: "relative",
-    overflow: "hidden"
+    overflow: "hidden",
+    marginVertical: 8
   },
   sideTop: {
     width: "100%",
@@ -77,7 +85,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#000000ff",
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 18
+    marginTop: 6
   },
   navActive: {
     backgroundColor: "#7AE2CF"
@@ -86,4 +94,4 @@ const styles = StyleSheet.create({
     backgroundColor: "#FD5308",
     marginTop: 22
   }
-});
+})
