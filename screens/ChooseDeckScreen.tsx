@@ -14,8 +14,9 @@ const CARDS = [
   { id: "nolifers" as DeckId, title: "Hackathon Hero", image: require("../assets/card4.png") }
 ]
 
-export default function ChooseDeckScreen({ navigation }: any) {
+export default function ChooseDeckScreen({ route, navigation }: any) {
   const [name, setName] = useState<string>("")
+  const mode = route?.params?.mode ?? "play"
 
   useEffect(() => {
     if (!auth.currentUser) return
@@ -24,6 +25,14 @@ export default function ChooseDeckScreen({ navigation }: any) {
       setName((data && data.name) || "")
     })
   }, [])
+
+  const goNext = (deck: { id: DeckId, title: string }) => {
+    if (mode === "create") {
+      navigation.navigate("CreateCard", { deckId: deck.id, deckTitle: deck.title })
+    } else {
+      navigation.navigate("Flashcards", { deckId: deck.id })
+    }
+  }
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["left","right","top","bottom"]}>
@@ -37,7 +46,7 @@ export default function ChooseDeckScreen({ navigation }: any) {
                 key={c.id}
                 style={styles.gridItem}
                 activeOpacity={0.9}
-                onPress={() => navigation.navigate("CreateCard", { deckId: c.id, deckTitle: c.title })}
+                onPress={() => goNext(c)}
               >
                 <Image source={c.image} style={styles.image} resizeMode="contain" />
                 <View style={styles.pill}>
@@ -52,16 +61,12 @@ export default function ChooseDeckScreen({ navigation }: any) {
   )
 }
 
-
-
-
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: "#000000",
     paddingLeft: Platform.OS === "android" ? 10 : 0,
     paddingRight: Platform.OS === "android" ? 10 : 0,
-    paddingBottom: Platform.OS === "android" ? 12 : 10
   },
   root: {
     flex: 1,
@@ -105,7 +110,7 @@ const styles = StyleSheet.create({
   },
   pill: {
     width: "100%",
-    height:  Platform.OS === "android" ? 24 : 28,
+    height: Platform.OS === "android" ? 24 : 28,
     borderRadius: 14,
     backgroundColor: "#7AE2CF",
     alignItems: "center",

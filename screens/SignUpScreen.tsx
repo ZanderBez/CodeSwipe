@@ -29,8 +29,10 @@ export default function SignUpScreen({ navigation }: any) {
     try {
       setLoading(true);
       await registerUser(name, email, password);
-      Alert.alert("Success", `Account created`);
-      navigation.navigate("Home");
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "Home", params: { showOnboarding: true } }]
+      });
     } catch (error: any) {
       Alert.alert("Signup Failed", error.message);
     } finally {
@@ -82,7 +84,7 @@ export default function SignUpScreen({ navigation }: any) {
           </View>
 
           <View style={styles.rightCol}>
-            <GoogleSwipeAuth onSuccess={() => navigation.replace("Home")} style={styles.rightSwipeArea}>
+            <GoogleSwipeAuth onSuccess={() => navigation.replace("Home", { showOnboarding: true })} style={styles.rightSwipeArea}>
               <Animated.View style={[styles.rightAnimated, bobStyle]}>
                 <View style={styles.rightCopy}>
                   <Text style={styles.rightTitle}>Sign up</Text>

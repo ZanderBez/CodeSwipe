@@ -120,7 +120,7 @@ export default function PerformanceScreen({ navigation }: any) {
           <Text style={styles.pageTitle}>My Performance</Text>
           <View style={styles.row}>
             <View style={[styles.card, styles.leftCard]}>
-              <Text style={styles.cardTitle}>Today Points</Text>
+              <Text style={styles.cardTitle}>Card Points</Text>
               {rows.map((r, i) => (
                 <View key={i} style={{ marginBottom: i === rows.length - 1 ? 0 : 10 }}>
                   <ProgressRow label={r.label} value={r.value} max={r.max} barHeight={12} compact />
@@ -149,7 +149,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#000000",
     paddingLeft: Platform.OS === "android" ? 10 : 0,
     paddingRight: Platform.OS === "android" ? 10 : 0,
-    paddingBottom: Platform.OS === "android" ? 12 : 8
   },
   root: {
     flex: 1,
@@ -174,7 +173,7 @@ const styles = StyleSheet.create({
   },
   leftCard: {
     flex: 1,
-    height: "100%",
+    height: "102%",
     marginRight: 20,
     paddingBottom: 12
   },

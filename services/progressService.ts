@@ -17,7 +17,6 @@ export async function saveQuizResult(uid: string, deckId: DeckId, score: number,
   const ref = doc(db, "users", uid, "progress", deckId)
   const snap = await getDoc(ref)
   const now = serverTimestamp()
-
   if (!snap.exists()) {
     await setDoc(ref, {
       deckId,
@@ -32,13 +31,11 @@ export async function saveQuizResult(uid: string, deckId: DeckId, score: number,
     })
     return
   }
-
   const cur = snap.data() as DeckProgress
   const curBestPct = cur.bestTotal > 0 ? cur.bestScore / cur.bestTotal : 0
   const newPct = total > 0 ? score / total : 0
   const nextBestScore = newPct > curBestPct ? score : cur.bestScore
   const nextBestTotal = newPct > curBestPct ? total : cur.bestTotal
-
   await setDoc(ref, {
     deckId,
     bestScore: nextBestScore,
@@ -65,4 +62,46 @@ export async function recordCorrectCard(uid: string, deckId: string, cardId: str
   const key = `${deckId}:${cardId}`
   const ref = doc(db, "users", uid)
   await setDoc(ref, { correctCards: { [key]: true } }, { merge: true })
+}
+
+export function listenToCorrectCount(uid: string, onChange: (n: number) => void): Unsubscribe {
+  const userRef = doc(db, "users", uid)
+  const progRef = collection(db, "users", uid, "progress")
+  let mapCount: number | null = null
+  let sumCount: number | null = null
+  const emit = () => {
+    if (mapCount !== null) {
+      onChange(mapCount)
+    } else if (sumCount !== null) {
+      onChange(sumCount)
+    } else {
+      onChange(0)
+    }
+  }
+  const unsubUser = onSnapshot(userRef, (snap) => {
+    if (snap.exists()) {
+      const data = snap.data() as any
+      if (data && typeof data.correctCards === "object") {
+        mapCount = Object.keys(data.correctCards).length
+      } else {
+        mapCount = null
+      }
+    } else {
+      mapCount = null
+    }
+    emit()
+  })
+  const unsubProg = onSnapshot(progRef, (qs) => {
+    let sum = 0
+    qs.forEach(d => {
+      const v = d.data() as any
+      sum += typeof v.totalCorrect === "number" ? v.totalCorrect : 0
+    })
+    sumCount = sum
+    emit()
+  })
+  return () => {
+    unsubUser()
+    unsubProg()
+  }
 }

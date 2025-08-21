@@ -12,11 +12,12 @@ import LoginScreen from "./screens/LoginScreen"
 import { auth } from "./firebase"
 import SplashScreen from "./screens/SplashScreen"
 import ProfileScreen from "./screens/ProfileScreen"
-import EditPhotoUrlScreen from "./screens/EditPhotoUrlScreen"
+import EditPhotoUrlScreen from "./screens/EditPhotoScreen"
 import FlashcardsScreen from "./screens/FlashcardsScreen"
 import PerformanceScreen from "./screens/PerformanceScreen"
 import ChooseDeckScreen from "./screens/ChooseDeckScreen"
 import CreateCardScreen from "./screens/CreateCardScreen"
+import LearningHubScreen from "./screens/LearningHubScreen"
 
 const Stack = createNativeStackNavigator()
 Splash.preventAutoHideAsync().catch(() => {})
@@ -46,6 +47,7 @@ export default function App() {
           <Stack.Screen name="Performance" component={PerformanceScreen} />
           <Stack.Screen name="ChooseDeck" component={ChooseDeckScreen} />
           <Stack.Screen name="CreateCard" component={CreateCardScreen} />
+          <Stack.Screen name="LearningHub" component={LearningHubScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </GestureHandlerRootView>

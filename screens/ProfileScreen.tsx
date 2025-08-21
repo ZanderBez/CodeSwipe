@@ -14,6 +14,7 @@ export default function ProfileScreen({ navigation }: any) {
   const [currentPassword, setCurrentPassword] = useState("")
   const [avatarUrl, setAvatarUrl] = useState("")
   const [saving, setSaving] = useState(false)
+  const [loadingImage, setLoadingImage] = useState(false)
 
   useEffect(() => {
     const u = auth.currentUser
@@ -124,12 +125,21 @@ export default function ProfileScreen({ navigation }: any) {
                     source={{ uri: avatarUrl }}
                     style={styles.avatarImage}
                     onError={() => Alert.alert("Image error", "Could not load that URL")}
+                    onLoadStart={() => setLoadingImage(true)}
+                    onLoadEnd={() => setLoadingImage(false)}
                   />
                 ) : (
                   <View style={styles.avatarInner} />
                 )}
+                {loadingImage && (
+                  <ActivityIndicator
+                    size="large"
+                    color="#7AE2CF"
+                    style={styles.loadingSpinner}
+                  />
+                )}
                 <View style={styles.orangeArc} />
-                <TouchableOpacity style={styles.camBtn} onPress={() => navigation.navigate("EditPhotoUrl")}>
+                <TouchableOpacity style={styles.camBtn} onPress={() => navigation.navigate("EditPhoto")}>
                   <Ionicons name="camera" size={16} color="#000000" />
                 </TouchableOpacity>
               </View>
@@ -224,13 +234,17 @@ const styles = StyleSheet.create({
     width: 280,
     height: 280,
     borderRadius: 140,
-    backgroundColor: "#FFFFFF"
+    backgroundColor: "#1A1A1A"
   },
   avatarImage: {
     position: "absolute",
     width: 280,
     height: 280,
     borderRadius: 140
+  },
+  loadingSpinner: {
+    position: "absolute",
+    alignSelf: "center"
   },
   orangeArc: {
     position: "absolute",

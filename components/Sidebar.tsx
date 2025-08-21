@@ -44,7 +44,7 @@ export default function Sidebar({ name, navigation, active = "Home" }: SidebarPr
 
       <TouchableOpacity
         style={[styles.navBtn, active === "Create" && styles.navActive]}
-        onPress={() => navigation.navigate("ChooseDeck")}
+        onPress={() => navigation.navigate("LearningHub")}
       >
         <Ionicons name="add-circle-outline" size={22} color={active === "Create" ? "#0B0B0B" : "#FFFFFF"} />
       </TouchableOpacity>

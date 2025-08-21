@@ -139,7 +139,7 @@ export default function FlashcardsScreen({ route, navigation }: any) {
               <View style={[styles.introUnderline, { backgroundColor: theme.accent }]} />
               <Text style={styles.introBlurb}>{theme.blurb}</Text>
               <TouchableOpacity onPress={() => navigation.goBack()} style={[styles.smallBack, { backgroundColor: theme.accent }]}>
-                <Ionicons name="arrow-back" size={20} color="#000000" />
+                <Ionicons name="arrow-back" size={20} color="#ffffffff" />
               </TouchableOpacity>
             </View>
             <View style={styles.introRight}>

@@ -66,7 +66,7 @@ export default function CreateCardScreen({ route, navigation }: any) {
       setWrong1("")
       setWrong2("")
       Alert.alert("Card created")
-      navigation.navigate("ChooseDeck")
+      navigation.navigate("ChooseDeck", { mode: "create" })
     } catch {
       Alert.alert("Failed to create")
     } finally {
@@ -80,7 +80,7 @@ export default function CreateCardScreen({ route, navigation }: any) {
         <Sidebar name={name} navigation={navigation} active="Create" />
         <View style={styles.content}>
           <View style={styles.headerRow}>
-            <TouchableOpacity onPress={() => navigation.navigate("ChooseDeck")} style={styles.backBtn}>
+            <TouchableOpacity onPress={() => navigation.navigate("ChooseDeck", { mode: "create" })} style={styles.backBtn}>
               <Ionicons name="arrow-back" size={18} color="#000000" />
             </TouchableOpacity>
             <View style={styles.headerCenter}>
@@ -89,7 +89,6 @@ export default function CreateCardScreen({ route, navigation }: any) {
             </View>
             <View style={styles.headerSpacer} />
           </View>
-
           <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.kav}>
             <View style={styles.formCard}>
               <TextInput style={styles.input} placeholder="Write Question" placeholderTextColor="#96A0A0" value={question} onChangeText={setQuestion} />
@@ -113,7 +112,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#000000",
     paddingLeft: Platform.OS === "android" ? 10 : 0,
     paddingRight: Platform.OS === "android" ? 10 : 0,
-    paddingBottom: Platform.OS === "android" ? 28 : 14
   },
   root: {
     flex: 1,

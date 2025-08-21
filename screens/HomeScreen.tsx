@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from "react"
-import { View, Text, TouchableOpacity, StyleSheet, Image, Platform } from "react-native"
+import { View, Text, TouchableOpacity, StyleSheet, Image, Platform, StyleSheet as RNStyleSheet } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import Sidebar from "../components/Sidebar"
 import { auth, db } from "../firebase"
 import { doc, getDoc, onSnapshot } from "firebase/firestore"
 import { listenUserProgress, DeckProgress } from "../services/progressService"
 import ProgressRow from "../components/ProgressRow"
+import OnboardingOverlay from "../components/OnboardingOverlay"
 
 type DeckId = "beginner" | "intermediate" | "advanced" | "nolifers"
 
-export default function HomeScreen({ navigation }: any) {
+export default function HomeScreen({ navigation, route }: any) {
   const [name, setName] = useState<string>("")
   const [progress, setProgress] = useState<Record<DeckId, DeckProgress | undefined>>({
     beginner: undefined,
@@ -23,6 +24,7 @@ export default function HomeScreen({ navigation }: any) {
     advanced: 10,
     nolifers: 10
   })
+  const [showOnboarding, setShowOnboarding] = useState(false)
 
   useEffect(() => {
     if (!auth.currentUser) return
@@ -46,6 +48,14 @@ export default function HomeScreen({ navigation }: any) {
       unsubs.forEach(fn => fn && fn())
     }
   }, [])
+
+  useEffect(() => {
+    const shouldShow = route?.params?.showOnboarding === true
+    if (shouldShow) {
+      setShowOnboarding(true)
+      navigation.setParams({ showOnboarding: undefined })
+    }
+  }, [route?.params?.showOnboarding, navigation])
 
   const progressData = [
     { label: "Beginner", value: progress.beginner?.bestScore ?? 0, max: deckTotals.beginner, deckId: "beginner" as DeckId, title: "Beginner" },
@@ -104,6 +114,12 @@ export default function HomeScreen({ navigation }: any) {
             </View>
           </View>
         </View>
+
+        {showOnboarding && (
+          <View style={[RNStyleSheet.absoluteFill, { zIndex: 1000 }]} pointerEvents="auto">
+            <OnboardingOverlay onDone={() => setShowOnboarding(false)} />
+          </View>
+        )}
       </View>
     </SafeAreaView>
   )
