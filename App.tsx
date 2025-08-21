@@ -18,6 +18,7 @@ import PerformanceScreen from "./screens/PerformanceScreen"
 import ChooseDeckScreen from "./screens/ChooseDeckScreen"
 import CreateCardScreen from "./screens/CreateCardScreen"
 import LearningHubScreen from "./screens/LearningHubScreen"
+import ManageCardsScreen from "./screens/ManageCardsScreen"
 
 const Stack = createNativeStackNavigator()
 Splash.preventAutoHideAsync().catch(() => {})
@@ -48,6 +49,7 @@ export default function App() {
           <Stack.Screen name="ChooseDeck" component={ChooseDeckScreen} />
           <Stack.Screen name="CreateCard" component={CreateCardScreen} />
           <Stack.Screen name="LearningHub" component={LearningHubScreen} />
+          <Stack.Screen name="ManageCards" component={ManageCardsScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </GestureHandlerRootView>

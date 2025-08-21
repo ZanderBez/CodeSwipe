@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react"
-import { View, Text, StyleSheet, Platform, Image, TouchableOpacity } from "react-native"
+import { View, Text, StyleSheet, Platform, TouchableOpacity } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import Sidebar from "../components/Sidebar"
 import { auth, db } from "../firebase"
 import { doc, getDoc } from "firebase/firestore"
+import useEligibility from "../hooks/useEligibility"
+import LoaderImage from "../components/LoaderImage"
 
 type DeckId = "beginner" | "intermediate" | "advanced" | "nolifers"
 
@@ -17,6 +19,7 @@ const CARDS = [
 export default function ChooseDeckScreen({ route, navigation }: any) {
   const [name, setName] = useState<string>("")
   const mode = route?.params?.mode ?? "play"
+  const { eligible } = useEligibility()
 
   useEffect(() => {
     if (!auth.currentUser) return
@@ -39,16 +42,21 @@ export default function ChooseDeckScreen({ route, navigation }: any) {
       <View style={styles.root}>
         <Sidebar name={name} navigation={navigation} active="Create" />
         <View style={styles.content}>
-          <Text style={styles.title}>Choose a Deck to Create a Card</Text>
+          <View style={styles.titleRow}>
+            <Text style={styles.title}>{mode === "create" ? "Choose a Deck to Create a Card" : "Choose a Deck"}</Text>
+            {eligible && (
+              <TouchableOpacity style={styles.manageBtnSmall} onPress={() => navigation.navigate("ManageCards")}>
+                <Text style={styles.manageTxtSmall}>Manage</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
           <View style={styles.grid}>
             {CARDS.map(c => (
-              <TouchableOpacity
-                key={c.id}
-                style={styles.gridItem}
-                activeOpacity={0.9}
-                onPress={() => goNext(c)}
-              >
-                <Image source={c.image} style={styles.image} resizeMode="contain" />
+              <TouchableOpacity key={c.id} style={styles.gridItem} activeOpacity={0.9} onPress={() => goNext(c)}>
+                <View style={styles.imageBox}>
+                  <LoaderImage source={c.image} resizeMode="contain" />
+                </View>
                 <View style={styles.pill}>
                   <Text style={styles.pillText}>{c.title}</Text>
                 </View>
@@ -66,7 +74,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#000000",
     paddingLeft: Platform.OS === "android" ? 10 : 0,
-    paddingRight: Platform.OS === "android" ? 10 : 0,
+    paddingRight: Platform.OS === "android" ? 10 : 0
   },
   root: {
     flex: 1,
@@ -78,12 +86,27 @@ const styles = StyleSheet.create({
     paddingTop: 14,
     paddingBottom: 8
   },
+  titleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 12
+  },
   title: {
     color: "#FFFFFF",
     fontSize: 22,
+    fontWeight: "800"
+  },
+  manageBtnSmall: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 14,
+    backgroundColor: "#7AE2CF"
+  },
+  manageTxtSmall: {
+    color: "#ffffffff",
     fontWeight: "800",
-    textAlign: "center",
-    marginBottom: 12
+    fontSize: 12
   },
   grid: {
     width: "100%",
@@ -95,7 +118,7 @@ const styles = StyleSheet.create({
   gridItem: {
     width: "47%",
     height: Platform.OS === "android" ? 138 : 150,
-    backgroundColor: "#ffffffff",
+    backgroundColor: "#FFFFFF",
     borderRadius: 20,
     padding: Platform.OS === "android" ? 8 : 10,
     borderWidth: 1,
@@ -103,10 +126,9 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     justifyContent: "space-between"
   },
-  image: {
+  imageBox: {
     width: "100%",
-    height: Platform.OS === "android" ? "70%" : "75%",
-    borderRadius: 14
+    height: Platform.OS === "android" ? "70%" : "75%"
   },
   pill: {
     width: "100%",
@@ -118,7 +140,7 @@ const styles = StyleSheet.create({
     marginTop: 8
   },
   pillText: {
-    color: "#ffffffff",
+    color: "#FFFFFF",
     fontWeight: "800",
     fontSize: Platform.OS === "android" ? 12 : 14
   }

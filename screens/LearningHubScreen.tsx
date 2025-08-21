@@ -85,6 +85,7 @@ const styles = StyleSheet.create({
     marginBottom: 12
   },
   loaderCard: {
+    
     borderRadius: 18,
     paddingVertical: 28,
     paddingHorizontal: 24,

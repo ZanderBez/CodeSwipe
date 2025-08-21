@@ -4,9 +4,9 @@ import { SafeAreaView } from "react-native-safe-area-context"
 import { Ionicons } from "@expo/vector-icons"
 import Sidebar from "../components/Sidebar"
 import { auth, db } from "../firebase"
-import { doc, getDoc, collection, addDoc, serverTimestamp, query, orderBy, limit, getDocs, setDoc, increment } from "firebase/firestore"
-
-type DeckId = "beginner" | "intermediate" | "advanced" | "nolifers"
+import { doc, getDoc } from "firebase/firestore"
+import { DeckId } from "../types/flashcards"
+import { createCard } from "../services/flashcardService"
 
 export default function CreateCardScreen({ route, navigation }: any) {
   const p = route?.params || {}
@@ -28,16 +28,6 @@ export default function CreateCardScreen({ route, navigation }: any) {
     })
   }, [])
 
-  const getNextIndex = async (): Promise<number> => {
-    const ref = collection(db, "decks", deckId, "cards")
-    const q = query(ref, orderBy("index", "desc"), limit(1))
-    const s = await getDocs(q)
-    if (s.empty) return 1
-    const top = s.docs[0].data() as any
-    const cur = Number(top.index || 0)
-    return cur + 1
-  }
-
   const onSave = async () => {
     if (!question.trim() || !rightAns.trim() || !wrong1.trim() || !wrong2.trim()) {
       Alert.alert("Fill all fields")
@@ -49,18 +39,7 @@ export default function CreateCardScreen({ route, navigation }: any) {
     }
     try {
       setSaving(true)
-      const idx = await getNextIndex()
-      const ref = collection(db, "decks", deckId, "cards")
-      await addDoc(ref, {
-        index: idx,
-        question: question.trim(),
-        options: [rightAns.trim(), wrong1.trim(), wrong2.trim()],
-        correctIndex: 0,
-        approved: true,
-        createdAt: serverTimestamp(),
-        createdBy: auth.currentUser.uid
-      })
-      await setDoc(doc(db, "decks", deckId), { cardCount: increment(1) }, { merge: true })
+      await createCard(deckId, question, [rightAns, wrong1, wrong2], auth.currentUser.uid)
       setQuestion("")
       setRightAns("")
       setWrong1("")
@@ -81,7 +60,7 @@ export default function CreateCardScreen({ route, navigation }: any) {
         <View style={styles.content}>
           <View style={styles.headerRow}>
             <TouchableOpacity onPress={() => navigation.navigate("ChooseDeck", { mode: "create" })} style={styles.backBtn}>
-              <Ionicons name="arrow-back" size={18} color="#000000" />
+              <Ionicons name="arrow-back" size={18} color="#ffffffff" />
             </TouchableOpacity>
             <View style={styles.headerCenter}>
               <Text style={styles.title}>Create a Card</Text>
@@ -111,7 +90,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#000000",
     paddingLeft: Platform.OS === "android" ? 10 : 0,
-    paddingRight: Platform.OS === "android" ? 10 : 0,
+    paddingRight: Platform.OS === "android" ? 10 : 0
   },
   root: {
     flex: 1,

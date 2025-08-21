@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react"
-import { View, Text, TouchableOpacity, StyleSheet, Image, Platform, StyleSheet as RNStyleSheet } from "react-native"
+import { View, Text, TouchableOpacity, StyleSheet, Platform, StyleSheet as RNStyleSheet } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import Sidebar from "../components/Sidebar"
 import { auth, db } from "../firebase"
@@ -7,6 +7,7 @@ import { doc, getDoc, onSnapshot } from "firebase/firestore"
 import { listenUserProgress, DeckProgress } from "../services/progressService"
 import ProgressRow from "../components/ProgressRow"
 import OnboardingOverlay from "../components/OnboardingOverlay"
+import LoaderImage from "../components/LoaderImage"
 
 type DeckId = "beginner" | "intermediate" | "advanced" | "nolifers"
 
@@ -83,29 +84,41 @@ export default function HomeScreen({ navigation, route }: any) {
                 <Text style={styles.pillBtnText}>Details</Text>
               </TouchableOpacity>
             </View>
+
             <View style={styles.card}>
               <Text style={styles.cardTitle}>How Brave are you?</Text>
               <View style={styles.grid}>
                 <TouchableOpacity style={styles.gridItem} onPress={() => goDeck("beginner", "Beginner")}>
-                  <Image source={require("../assets/card1.png")} style={styles.illustrationImg} resizeMode="cover" />
+                  <View style={styles.illustrationBox}>
+                    <LoaderImage source={require("../assets/card1.png")} resizeMode="cover" containerStyle={styles.loaderFill} />
+                  </View>
                   <View style={styles.levelPill}>
                     <Text style={styles.levelPillText}>Beginner</Text>
                   </View>
                 </TouchableOpacity>
+
                 <TouchableOpacity style={styles.gridItem} onPress={() => goDeck("intermediate", "Intermediate")}>
-                  <Image source={require("../assets/card2.png")} style={styles.illustrationImg} resizeMode="cover" />
+                  <View style={styles.illustrationBox}>
+                    <LoaderImage source={require("../assets/card2.png")} resizeMode="cover" containerStyle={styles.loaderFill} />
+                  </View>
                   <View style={styles.levelPill}>
                     <Text style={styles.levelPillText}>Intermediate</Text>
                   </View>
                 </TouchableOpacity>
+
                 <TouchableOpacity style={styles.gridItem} onPress={() => goDeck("advanced", "Advanced")}>
-                  <Image source={require("../assets/card3.png")} style={styles.illustrationImg} resizeMode="cover" />
+                  <View style={styles.illustrationBox}>
+                    <LoaderImage source={require("../assets/card3.png")} resizeMode="cover" containerStyle={styles.loaderFill} />
+                  </View>
                   <View style={styles.levelPill}>
                     <Text style={styles.levelPillText}>Advanced</Text>
                   </View>
                 </TouchableOpacity>
+
                 <TouchableOpacity style={styles.gridItem} onPress={() => goDeck("nolifers", "No Lifers")}>
-                  <Image source={require("../assets/card4.png")} style={styles.illustrationImg} resizeMode="cover" />
+                  <View style={styles.illustrationBox}>
+                    <LoaderImage source={require("../assets/card4.png")} resizeMode="cover" containerStyle={styles.loaderFill} />
+                  </View>
                   <View style={styles.levelPill}>
                     <Text style={styles.levelPillText}>No Lifers</Text>
                   </View>
@@ -172,7 +185,7 @@ const styles = StyleSheet.create({
     justifyContent: "center"
   },
   pillBtnText: {
-    color: "#ffffffff",
+    color: "#FFFFFF",
     fontWeight: "800",
     fontSize: Platform.OS === "android" ? 13 : 14
   },
@@ -186,14 +199,18 @@ const styles = StyleSheet.create({
   gridItem: {
     width: Platform.OS === "android" ? "47.5%" : "48%",
     aspectRatio: Platform.OS === "android" ? 1.26 : 1,
-    backgroundColor: "#ffffffff",
+    backgroundColor: "#FFFFFF",
     borderRadius: 16,
     padding: Platform.OS === "android" ? 8 : 10,
     overflow: "hidden",
     justifyContent: "space-between"
   },
-  illustrationImg: {
-    width: "100%",
+  illustrationBox: {
+    flex: 1,
+    borderRadius: 12,
+    overflow: "hidden"
+  },
+  loaderFill: {
     flex: 1,
     borderRadius: 12
   },
@@ -209,7 +226,7 @@ const styles = StyleSheet.create({
     marginTop: 8
   },
   levelPillText: {
-    color: "#ffffffff",
+    color: "#FFFFFF",
     fontWeight: "800",
     fontSize: 11
   }

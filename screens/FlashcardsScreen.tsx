@@ -1,111 +1,141 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image, Platform, BackHandler, Animated } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import Swiper from "react-native-deck-swiper";
-import { Ionicons } from "@expo/vector-icons";
-import { fetchDeckCards } from "../services/flashcardService";
-import { CardDoc, DeckId } from "../types/flashcards";
-import { THEMES } from "../services/themes";
-import { auth } from "../firebase";
-import { saveQuizResult, recordCorrectCard } from "../services/progressService";
+import React, { useEffect, useMemo, useRef, useState } from "react"
+import { View, Text, StyleSheet, TouchableOpacity, Platform, BackHandler, Animated } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
+import Swiper from "react-native-deck-swiper"
+import { Ionicons } from "@expo/vector-icons"
+import { fetchDeckCards } from "../services/flashcardService"
+import { CardDoc, DeckId } from "../types/flashcards"
+import { THEMES } from "../services/themes"
+import { auth } from "../firebase"
+import { saveQuizResult, recordCorrectCard } from "../services/progressService"
+import LoaderImage from "../components/LoaderImage"
 
-type Mode = "intro" | "quiz" | "score";
-type Phase = "preview" | "answers";
+type Mode = "intro" | "quiz" | "score"
+type Phase = "preview" | "answers"
 
-const validIds: DeckId[] = ["beginner", "intermediate", "advanced", "nolifers"];
-const PREVIEW_SECS = 10;
-const ANSWER_SECS = 15;
-const FADE_MS = 160;
+const validIds: DeckId[] = ["beginner", "intermediate", "advanced", "nolifers"]
+const PREVIEW_SECS = 10
+const ANSWER_SECS = 15
+const FADE_MS = 160
+
+type ShuffledCard = CardDoc & {
+  optionsShuffled: string[]
+  correctIndexShuffled: number
+}
+
+function shuffleArray<T>(arr: T[]): T[] {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
+function prepareCards(src: CardDoc[]): ShuffledCard[] {
+  return src.map(c => {
+    const order = shuffleArray([0, 1, 2])
+    const optionsShuffled = order.map(i => c.options[i])
+    const correctIndexShuffled = order.indexOf(c.correctIndex)
+    return { ...c, optionsShuffled, correctIndexShuffled }
+  })
+}
 
 function normalizeDeckId(input: any): DeckId {
-  if (typeof input !== "string") return "beginner";
-  const id = input.toLowerCase().replace(/\s+/g, "");
-  if (validIds.includes(id as DeckId)) return id as DeckId;
-  return "beginner";
+  if (typeof input !== "string") return "beginner"
+  const id = input.toLowerCase().replace(/\s+/g, "")
+  if (validIds.includes(id as DeckId)) return id as DeckId
+  return "beginner"
 }
 
 export default function FlashcardsScreen({ route, navigation }: any) {
-  const p = route?.params ?? {};
-  const deckId: DeckId = normalizeDeckId(p.deckId);
-  const theme = THEMES[deckId];
+  const p = route?.params ?? {}
+  const deckId: DeckId = normalizeDeckId(p.deckId)
+  const theme = THEMES[deckId]
 
-  const [cards, setCards] = useState<CardDoc[]>([]);
-  const [mode, setMode] = useState<Mode>("intro");
-  const [idx, setIdx] = useState(0);
-  const [phase, setPhase] = useState<Phase>("preview");
-  const [picked, setPicked] = useState<number | null>(null);
-  const [correct, setCorrect] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(PREVIEW_SECS);
+  const [cards, setCards] = useState<CardDoc[]>([])
+  const [playCards, setPlayCards] = useState<ShuffledCard[]>([])
+  const [mode, setMode] = useState<Mode>("intro")
+  const [idx, setIdx] = useState(0)
+  const [phase, setPhase] = useState<Phase>("preview")
+  const [picked, setPicked] = useState<number | null>(null)
+  const [correct, setCorrect] = useState(0)
+  const [timeLeft, setTimeLeft] = useState(PREVIEW_SECS)
 
-  const swiperRef = useRef<Swiper<CardDoc | undefined>>(null);
-  const fade = useRef(new Animated.Value(1)).current;
-
-  useEffect(() => {
-    fetchDeckCards(deckId).then(setCards);
-  }, [deckId]);
+  const swiperRef = useRef<Swiper<ShuffledCard | undefined>>(null)
+  const fade = useRef(new Animated.Value(1)).current
 
   useEffect(() => {
-    if (mode !== "quiz") return;
+    fetchDeckCards(deckId).then(setCards)
+  }, [deckId])
+
+  useEffect(() => {
+    setPlayCards(prepareCards(cards))
+  }, [cards])
+
+  useEffect(() => {
+    if (mode !== "quiz") return
     const id = setInterval(() => {
-      setTimeLeft((t) => {
-        if (phase === "preview") return Math.max(0, t - 1);
-        if (phase === "answers" && picked === null) return Math.max(0, t - 1);
-        return t;
-      });
-    }, 1000);
-    return () => clearInterval(id);
-  }, [mode, phase, picked]);
+      setTimeLeft(t => {
+        if (phase === "preview") return Math.max(0, t - 1)
+        if (phase === "answers" && picked === null) return Math.max(0, t - 1)
+        return t
+      })
+    }, 1000)
+    return () => clearInterval(id)
+  }, [mode, phase, picked])
 
   useEffect(() => {
-    if (mode !== "quiz") return;
+    if (mode !== "quiz") return
     if (phase === "preview" && timeLeft <= 0) {
-      swiperRef.current?.swipeLeft();
+      swiperRef.current?.swipeLeft()
     }
     if (phase === "answers" && timeLeft <= 0 && picked === null) {
-      proceedAfterPick();
+      proceedAfterPick()
     }
-  }, [timeLeft, phase, mode, picked]);
+  }, [timeLeft, phase, mode, picked])
 
   useEffect(() => {
     navigation.setOptions({
       gestureEnabled: mode !== "quiz",
       fullScreenGestureEnabled: mode !== "quiz"
-    });
-    let sub: any;
-    if (mode === "quiz") sub = BackHandler.addEventListener("hardwareBackPress", () => true);
-    return () => { if (sub) sub.remove(); };
-  }, [mode, navigation]);
+    })
+    let sub: any
+    if (mode === "quiz") sub = BackHandler.addEventListener("hardwareBackPress", () => true)
+    return () => { if (sub) sub.remove() }
+  }, [mode, navigation])
 
   const startNow = () => {
-    setIdx(0);
-    setCorrect(0);
-    setPicked(null);
-    setPhase("preview");
-    setTimeLeft(PREVIEW_SECS);
-    fade.setValue(1);
-    setMode("quiz");
-  };
+    setPlayCards(prepareCards(cards))
+    setIdx(0)
+    setCorrect(0)
+    setPicked(null)
+    setPhase("preview")
+    setTimeLeft(PREVIEW_SECS)
+    fade.setValue(1)
+    setMode("quiz")
+  }
 
   const proceedAfterPick = async () => {
-    const last = idx + 1 >= cards.length;
+    const last = idx + 1 >= playCards.length
     if (last) {
-      const u = auth.currentUser;
+      const u = auth.currentUser
       if (u) {
-        await saveQuizResult(u.uid, deckId, correct, cards.length);
+        await saveQuizResult(u.uid, deckId, correct, playCards.length)
       }
-      setMode("score");
-      return;
+      setMode("score")
+      return
     }
-    setIdx((i) => i + 1);
-    setPhase("preview");
-    setPicked(null);
-    fade.setValue(1);
-    setTimeLeft(PREVIEW_SECS);
-  };
+    setIdx(i => i + 1)
+    setPhase("preview")
+    setPicked(null)
+    fade.setValue(1)
+    setTimeLeft(PREVIEW_SECS)
+  }
 
   const finishQuestion = (choice: number | null) => {
-    const card = cards[idx]
-    const ok = choice !== null && card && choice === card.correctIndex
+    const card = playCards[idx]
+    const ok = choice !== null && card && choice === card.correctIndexShuffled
     if (ok) {
       setCorrect(c => c + 1)
       const u = auth.currentUser
@@ -115,19 +145,19 @@ export default function FlashcardsScreen({ route, navigation }: any) {
   }
 
   const revealAnswers = () => {
-    setPhase("answers");
-    setTimeLeft(ANSWER_SECS);
-    fade.setValue(0);
-    Animated.timing(fade, { toValue: 1, duration: FADE_MS, useNativeDriver: true }).start();
-  };
+    setPhase("answers")
+    setTimeLeft(ANSWER_SECS)
+    fade.setValue(0)
+    Animated.timing(fade, { toValue: 1, duration: FADE_MS, useNativeDriver: true }).start()
+  }
 
-  const progressText = useMemo(() => `${Math.min(idx + 1, cards.length)} / ${cards.length || 10}`, [idx, cards.length]);
-  const current = cards[idx];
+  const progressText = useMemo(() => `${Math.min(idx + 1, playCards.length)} / ${playCards.length || 10}`, [idx, playCards.length])
+  const current = playCards[idx]
 
   const onEyePress = () => {
-    if (phase === "preview") revealAnswers();
-    else if (picked !== null) proceedAfterPick();
-  };
+    if (phase === "preview") revealAnswers()
+    else if (picked !== null) proceedAfterPick()
+  }
 
   return (
     <SafeAreaView edges={mode === "intro" ? ["top", "bottom", "left", "right"] : ["top", "bottom"]} style={styles.safeArea}>
@@ -139,12 +169,12 @@ export default function FlashcardsScreen({ route, navigation }: any) {
               <View style={[styles.introUnderline, { backgroundColor: theme.accent }]} />
               <Text style={styles.introBlurb}>{theme.blurb}</Text>
               <TouchableOpacity onPress={() => navigation.goBack()} style={[styles.smallBack, { backgroundColor: theme.accent }]}>
-                <Ionicons name="arrow-back" size={20} color="#ffffffff" />
+                <Ionicons name="arrow-back" size={20} color="#FFFFFF" />
               </TouchableOpacity>
             </View>
             <View style={styles.introRight}>
               <View style={styles.imageCard}>
-                <Image source={theme.image} style={styles.image} resizeMode="cover" />
+                <LoaderImage source={theme.image} resizeMode="cover" />
               </View>
               <TouchableOpacity onPress={startNow} style={[styles.startBtn, { backgroundColor: theme.accent }]}>
                 <Text style={styles.startBtnText}>Start Now</Text>
@@ -205,7 +235,7 @@ export default function FlashcardsScreen({ route, navigation }: any) {
               {phase === "preview" ? (
                 <Swiper
                   ref={swiperRef}
-                  cards={cards}
+                  cards={playCards}
                   cardIndex={idx}
                   backgroundColor="transparent"
                   stackSize={4}
@@ -219,7 +249,7 @@ export default function FlashcardsScreen({ route, navigation }: any) {
                   onSwipedAll={() => {}}
                   containerStyle={styles.swiperContainer}
                   cardStyle={styles.swiperCardStyle}
-                  renderCard={(card: CardDoc | undefined) =>
+                  renderCard={(card: ShuffledCard | undefined) =>
                     card ? (
                       <View style={styles.card}>
                         <View style={styles.previewCenter}>
@@ -240,25 +270,25 @@ export default function FlashcardsScreen({ route, navigation }: any) {
                   {current ? (
                     <View>
                       <Text style={[styles.q, { marginBottom: 12 }]}>{current.question}</Text>
-                      {current.options.map((opt, i) => {
-                        const show = picked !== null;
-                        const isOk = i === current.correctIndex;
-                        const wasPicked = picked === i;
+                      {current.optionsShuffled.map((opt, i) => {
+                        const show = picked !== null
+                        const isOk = i === current.correctIndexShuffled
+                        const wasPicked = picked === i
                         const bg =
                           show && isOk ? { backgroundColor: theme.accent } :
                           show && wasPicked && !isOk ? { backgroundColor: theme.danger } :
-                          styles.optNeutral;
+                          styles.optNeutral
                         return (
                           <TouchableOpacity
                             key={i}
                             disabled={picked !== null || timeLeft <= 0}
-                            onPress={() => { if (picked === null && timeLeft > 0) finishQuestion(i); }}
+                            onPress={() => { if (picked === null && timeLeft > 0) finishQuestion(i) }}
                             style={[styles.opt, bg]}
                             activeOpacity={0.9}
                           >
                             <Text style={styles.optText}>{String.fromCharCode(97 + i)}) {opt}</Text>
                           </TouchableOpacity>
-                        );
+                        )
                       })}
                       {picked !== null && current.explanation ? (
                         <View style={styles.explain}>
@@ -288,9 +318,9 @@ export default function FlashcardsScreen({ route, navigation }: any) {
             <View style={styles.scoreCard}>
               <Text style={styles.scoreLabel}>Your Score</Text>
               <View style={styles.scoreTrack}>
-                <View style={[styles.scoreFill, { width: `${Math.round((correct / Math.max(cards.length, 1)) * 100)}%` }]} />
+                <View style={[styles.scoreFill, { width: `${Math.round((correct / Math.max(playCards.length, 1)) * 100)}%` }]} />
               </View>
-              <Text style={styles.scoreText}>{correct}/{cards.length}</Text>
+              <Text style={styles.scoreText}>{correct}/{playCards.length}</Text>
               <TouchableOpacity style={[styles.homeBtn, { backgroundColor: theme.accent }]} onPress={() => navigation.replace("Home")}>
                 <Text style={styles.homeBtnText}>Home</Text>
               </TouchableOpacity>
@@ -299,7 +329,7 @@ export default function FlashcardsScreen({ route, navigation }: any) {
         )}
       </View>
     </SafeAreaView>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -366,11 +396,6 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 8 },
     elevation: 8
-  },
-  image: {
-    width: "100%",
-    height: "100%",
-    borderRadius: 14
   },
   startBtn: {
     width: "82%",
@@ -586,7 +611,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FD5308"
   },
   scoreText: {
-    color: "#ffffffff",
+    color: "#FFFFFF",
     fontWeight: "800",
     marginBottom: 12
   },
@@ -603,4 +628,4 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontWeight: "800"
   }
-});
+})
