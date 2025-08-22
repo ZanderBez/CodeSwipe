@@ -5,7 +5,7 @@ type Page = { key: string; title: string; subtitle: string }
 
 const PAGES: Page[] = [
   { key: "p1", title: "Welcome to CodeSwipe", subtitle: "Swipe through coding flashcards and track your progress" },
-  { key: "p2", title: "Swipe To Learn", subtitle: "Choose a deck and answer cards to improve" },
+  { key: "p2", title: "Swipe To Learn", subtitle: "Choose a deck and answer cards, swipe left to skip the card and swipe right to reveal the possible answers you haver to choose" },
   { key: "p3", title: "Create Cards", subtitle: "Get 20 correct to unlock creating your own cards" }
 ]
 

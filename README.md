@@ -1,6 +1,6 @@
 # CodeSwipe
 
-![CodeSwipe Header Image](./ReadMeAssets/CodeSwipeHeader.png)
+![CodeSwipe Header Image](./ReadMeAssets/banner.png)
 <a id="readme-top"></a>
 
 <!-- PROJECT SHIELDS -->
@@ -202,22 +202,38 @@ Want to try CodeSwipe right now?
 
 2. Open Expo Go and scan the QR code below:  
 
-![CodeSwipe QR Code](./assets/QRCode.png)
+![CodeSwipe QR Code](./ReadMeAssets/QRCode.png)
 
 3. The app will load instantly in Expo Go.  
 
 ## Mockups
 
-> Add screenshots to `./ReadMeAssets/` and link them here.
+### Splash Screen
+![Splash Screen](./ReadMeAssets/Splash.png)
 
-- Splash Screen – `./ReadMeAssets/Splash.png`  
-- Sign Up / Login – `./ReadMeAssets/Login.png`  
-- Onboarding – `./ReadMeAssets/Onboarding.png`  
-- Home Page – `./ReadMeAssets/Home.png`  
-- Flashcard Quiz – `./ReadMeAssets/Quiz.png`  
-- Performance Page – `./ReadMeAssets/Performance.png`  
-- Profile Page – `./ReadMeAssets/Profile.png`  
-- Card Creation – `./ReadMeAssets/CardCreation.png`  
+### Sign Up & Login Page
+![Sign Up Page](./ReadMeAssets/LoginIsgnUp.png)
+
+### Home Page
+![Home Page](./ReadMeAssets/Home.png)
+
+### Flashcard Quiz
+![Flashcard Quiz](./ReadMeAssets/Quiz.png)
+
+### Performance Page
+![Performance Page](./ReadMeAssets/performace.png)
+
+### Profile Page
+![Profile Page](./ReadMeAssets/Profile.png)
+
+### Locked Card Creation
+![Locked Card Creation](./ReadMeAssets/LockCard.png)
+
+### Card Creation
+![Card Creation](./ReadMeAssets/Create.png)
+
+### Manage Cards
+![Manage Cards](./ReadMeAssets/Manage.png)
 
 <p align="right"><a href="#readme-top">[⬆️ Back to top]</a></p>
 
@@ -261,5 +277,5 @@ Contributions are welcome! If you'd like to help improve CodeSwipe:
 
 You can watch the CodeSwipe demo here:  
 
-[CodeSwipe Demo Video](https://drive.google.com/file/d/YOUR_VIDEO_ID/view?usp=sharing)
+[CodeSwipe Demo Video](https://drive.google.com/file/d/1i49KYsTTNYYy4a4DVnOoo7GwvxNKiep-/view?usp=drive_link)
 
