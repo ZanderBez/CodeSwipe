@@ -76,7 +76,9 @@ const styles = StyleSheet.create({
   },
   hiText: {
     color: "#FFFFFF",
-    fontSize: 12
+    fontSize: 12,
+    includeFontPadding: false,
+    fontFamily: "Montserrat_400Regular"
   },
   navBtn: {
     width: 48,

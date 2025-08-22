@@ -39,10 +39,14 @@ const styles = StyleSheet.create({
     marginBottom: 6
   },
   label: {
-    fontSize: 14
+    fontSize: 14,
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   },
   count: {
     fontSize: 12,
-    opacity: 0.9
+    opacity: 0.9,
+    includeFontPadding: false,
+    fontFamily: "Montserrat_400Regular"
   }
 })

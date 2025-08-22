@@ -122,11 +122,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 44,
+    lineHeight: 48,
     color: "#FFFFFF",
     textAlign: "center",
     marginBottom: 16,
-    fontWeight: "800",
-    letterSpacing: 1
+    letterSpacing: 1,
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   },
   form: {
     width: "100%",
@@ -141,7 +143,10 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: Platform.OS === "ios" ? 12 : 10,
-    fontSize: 16
+    fontSize: 16,
+    lineHeight: 20,
+    includeFontPadding: false,
+    fontFamily: "Montserrat_400Regular"
   },
   primaryButton: {
     width: "100%",
@@ -154,17 +159,21 @@ const styles = StyleSheet.create({
   primaryButtonText: {
     color: "#FFFFFF",
     fontSize: 16,
-    fontWeight: "800",
-    letterSpacing: 1
+    letterSpacing: 1,
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   },
   link: {
     color: "#7AE2CF",
     fontSize: 14,
-    textAlign: "center"
+    textAlign: "center",
+    includeFontPadding: false,
+    fontFamily: "Montserrat_400Regular"
   },
   linkStrong: {
     color: "#FFFFFF",
-    fontWeight: "700"
+    includeFontPadding: false,
+    fontFamily: "Montserrat_700Bold"
   },
   accentCircle: {
     position: "absolute",
@@ -201,14 +210,18 @@ const styles = StyleSheet.create({
   rightTitle: {
     color: "#FFFFFF",
     fontSize: 48,
-    fontWeight: "800",
-    letterSpacing: 1
+    lineHeight: 52,
+    letterSpacing: 1,
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   },
   rightSub: {
     color: "#FFFFFF",
     fontSize: 48,
-    fontWeight: "800",
-    letterSpacing: 1
+    lineHeight: 52,
+    letterSpacing: 1,
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   },
   googleRow: {
     flexDirection: "row",
@@ -227,6 +240,7 @@ const styles = StyleSheet.create({
   arrow: {
     color: "#FFFFFF",
     fontSize: 26,
-    fontWeight: "700"
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   }
 })

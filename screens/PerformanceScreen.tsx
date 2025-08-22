@@ -163,9 +163,10 @@ const styles = StyleSheet.create({
   pageTitle: {
     color: "#FFFFFF",
     fontSize: 26,
-    fontWeight: "800",
-    marginBottom: 16,
-    letterSpacing: 0.5
+    letterSpacing: 0.5,
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold",
+    paddingBottom: 12
   },
   row: {
     flex: 1,
@@ -193,9 +194,10 @@ const styles = StyleSheet.create({
   cardTitle: {
     color: "#FFFFFF",
     fontSize: 22,
-    fontWeight: "800",
     marginBottom: 12,
-    letterSpacing: 0.5
+    letterSpacing: 0.5,
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   },
   cardQuote: {
     marginBottom: 6
@@ -203,11 +205,14 @@ const styles = StyleSheet.create({
   quote: {
     color: "#FFFFFF",
     fontSize: 14,
-    fontWeight: "600"
+    includeFontPadding: false,
+    fontFamily: "Montserrat_400Regular"
   },
   quoteAuthor: {
     color: "#A7A7A7",
     fontSize: 12,
-    marginTop: 6
+    marginTop: 6,
+    includeFontPadding: false,
+    fontFamily: "Montserrat_700Bold"
   }
 })

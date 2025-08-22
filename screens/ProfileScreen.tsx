@@ -170,9 +170,10 @@ const styles = StyleSheet.create({
   title: {
     color: "#FFFFFF",
     fontSize: 36,
-    fontWeight: "800",
     marginBottom: 18,
-    letterSpacing: 0.5
+    letterSpacing: 0.5,
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   },
   row: {
     flex: 1,
@@ -199,7 +200,10 @@ const styles = StyleSheet.create({
     paddingVertical: Platform.OS === "ios" ? 14 : 12,
     fontSize: 16,
     backgroundColor: "#000000",
-    marginBottom: 14
+    marginBottom: 14,
+    lineHeight: 20,
+    includeFontPadding: false,
+    fontFamily: "Montserrat_400Regular"
   },
   saveBtn: {
     width: "70%",
@@ -213,7 +217,8 @@ const styles = StyleSheet.create({
   saveText: {
     color: "#ffffffff",
     fontSize: 16,
-    fontWeight: "800"
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   },
   avatarWrap: {
     width: 320,

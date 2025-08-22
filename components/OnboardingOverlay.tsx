@@ -116,14 +116,17 @@ const styles = StyleSheet.create({
   title: {
     color: "#FFFFFF",
     fontSize: 28,
-    fontWeight: "900",
     textAlign: "center",
-    marginBottom: 10
+    marginBottom: 10,
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   },
   subtitle: {
     color: "#96A0A0",
     fontSize: 16,
-    textAlign: "center"
+    textAlign: "center",
+    includeFontPadding: false,
+    fontFamily: "Montserrat_400Regular"
   },
   bottomWrap: {
     position: "absolute",
@@ -166,8 +169,9 @@ const styles = StyleSheet.create({
   },
   skipTxt: {
     color: "#7AE2CF",
-    fontWeight: "900",
-    fontSize: 16
+    fontSize: 16,
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   },
   ctaBtn: {
     flex: 1,
@@ -178,8 +182,9 @@ const styles = StyleSheet.create({
     justifyContent: "center"
   },
   ctaTxt: {
-    color: "#0B0B0B",
-    fontWeight: "900",
-    fontSize: 16
+    color: "#ffffffff",
+    fontSize: 16,
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   }
 })

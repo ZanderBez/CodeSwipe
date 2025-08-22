@@ -1,44 +1,44 @@
-import React, { useState, useEffect } from "react";
-import { SafeAreaView, KeyboardAvoidingView, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Platform, View } from "react-native";
-import { registerUser } from "../services/authService";
-import { FontAwesome } from "@expo/vector-icons";
-import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing } from "react-native-reanimated";
-import GoogleSwipeAuth from "../components/GoogleSwipeAuth";
+import React, { useState, useEffect } from "react"
+import { SafeAreaView, KeyboardAvoidingView, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Platform, View } from "react-native"
+import { registerUser } from "../services/authService"
+import { FontAwesome } from "@expo/vector-icons"
+import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing } from "react-native-reanimated"
+import GoogleSwipeAuth from "../components/GoogleSwipeAuth"
 
 export default function SignUpScreen({ navigation }: any) {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [role, setRole] = useState<"user" | "admin">("user");
-  const [loading, setLoading] = useState(false);
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [role, setRole] = useState<"user" | "admin">("user")
+  const [loading, setLoading] = useState(false)
 
-  const bob = useSharedValue(0);
+  const bob = useSharedValue(0)
   useEffect(() => {
-    bob.value = withRepeat(withTiming(1, { duration: 2200, easing: Easing.inOut(Easing.quad) }), -1, true);
-  }, []);
+    bob.value = withRepeat(withTiming(1, { duration: 2200, easing: Easing.inOut(Easing.quad) }), -1, true)
+  }, [])
   const bobStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: (bob.value - 0.5) * 10 }]
-  }));
+  }))
 
   const handleSignUp = async () => {
-    if (loading) return;
+    if (loading) return
     if (!name || !email || !password) {
-      Alert.alert("Error", "Please enter name, email and password.");
-      return;
+      Alert.alert("Error", "Please enter name, email and password.")
+      return
     }
     try {
-      setLoading(true);
-      await registerUser(name, email, password);
+      setLoading(true)
+      await registerUser(name, email, password)
       navigation.reset({
         index: 0,
         routes: [{ name: "Home", params: { showOnboarding: true } }]
-      });
+      })
     } catch (error: any) {
-      Alert.alert("Signup Failed", error.message);
+      Alert.alert("Signup Failed", error.message)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -104,11 +104,10 @@ export default function SignUpScreen({ navigation }: any) {
               <Text style={styles.loginLink} onPress={() => navigation.navigate("Login")}>Log In</Text>
             </View>
           </View>
-
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -134,11 +133,13 @@ const styles = StyleSheet.create({
   },
   joinTitle: {
     fontSize: 44,
+    lineHeight: 48,
     color: "#FFFFFF",
     textAlign: "center",
     marginBottom: 16,
-    fontWeight: "800",
-    letterSpacing: 1
+    letterSpacing: 1,
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   },
   form: {
     width: "100%",
@@ -153,7 +154,10 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: Platform.OS === "ios" ? 12 : 10,
-    fontSize: 16
+    fontSize: 16,
+    lineHeight: 20,
+    includeFontPadding: false,
+    fontFamily: "Montserrat_400Regular"
   },
   roleRow: {
     flexDirection: "row",
@@ -177,10 +181,13 @@ const styles = StyleSheet.create({
   roleUserText: {
     color: "#FFFFFF",
     fontSize: 16,
-    fontWeight: "700"
+    includeFontPadding: false,
+    fontFamily: "Montserrat_700Bold"
   },
   roleUserTextActive: {
-    color: "#FFFFFF"
+    color: "#FFFFFF",
+    includeFontPadding: false,
+    fontFamily: "Montserrat_700Bold"
   },
   roleAdmin: {
     borderWidth: 2,
@@ -193,10 +200,13 @@ const styles = StyleSheet.create({
   roleAdminText: {
     color: "#FFFFFF",
     fontSize: 16,
-    fontWeight: "700"
+    includeFontPadding: false,
+    fontFamily: "Montserrat_700Bold"
   },
   roleAdminTextActive: {
-    color: "#FFFFFF"
+    color: "#FFFFFF",
+    includeFontPadding: false,
+    fontFamily: "Montserrat_700Bold"
   },
   signUpButton: {
     width: "100%",
@@ -209,8 +219,9 @@ const styles = StyleSheet.create({
   signUpText: {
     color: "#FFFFFF",
     fontSize: 16,
-    fontWeight: "800",
-    letterSpacing: 1
+    letterSpacing: 1,
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   },
   accentCircle: {
     position: "absolute",
@@ -228,7 +239,7 @@ const styles = StyleSheet.create({
     flex: 2,
     justifyContent: "center",
     alignItems: "flex-end",
-    paddingRight: 32,
+    paddingRight: 10,
     gap: 16
   },
   rightAnimated: {
@@ -241,14 +252,18 @@ const styles = StyleSheet.create({
   rightTitle: {
     color: "#FFFFFF",
     fontSize: 48,
-    fontWeight: "800",
-    letterSpacing: 1
+    lineHeight: 52,
+    letterSpacing: 1,
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   },
   rightSub: {
     color: "#FFFFFF",
     fontSize: 48,
-    fontWeight: "800",
-    letterSpacing: 1
+    lineHeight: 52,
+    letterSpacing: 1,
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   },
   rightSwipeArea: {
     flex: 1,
@@ -275,7 +290,8 @@ const styles = StyleSheet.create({
   arrow: {
     color: "#FFFFFF",
     fontSize: 26,
-    fontWeight: "700"
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   },
   loginRow: {
     flexDirection: "row",
@@ -283,11 +299,14 @@ const styles = StyleSheet.create({
   },
   haveAcc: {
     color: "#7AE2CF",
-    fontSize: 14
+    fontSize: 14,
+    includeFontPadding: false,
+    fontFamily: "Montserrat_400Regular"
   },
   loginLink: {
     color: "#FFFFFF",
     fontSize: 14,
-    fontWeight: "700"
+    includeFontPadding: false,
+    fontFamily: "Montserrat_700Bold"
   }
-});
+})

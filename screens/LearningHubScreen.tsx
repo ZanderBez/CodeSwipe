@@ -27,11 +27,13 @@ export default function LearningHubScreen({ navigation }: any) {
     return () => clearTimeout(timer)
   }, [])
 
-  useEffect(() => {
-    if (!loading && eligible && !showLoader) {
+useEffect(() => {
+  if (!loading && !showLoader) {
+    if (eligible) {
       navigation.replace("ChooseDeck", { mode: "create" })
     }
-  }, [eligible, loading, showLoader, navigation])
+  }
+}, [loading, showLoader, navigation])
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["left","right","top","bottom"]}>
@@ -80,12 +82,12 @@ const styles = StyleSheet.create({
   lockTitle: {
     color: "#FFFFFF",
     fontSize: 22,
-    fontWeight: "800",
     textAlign: "center",
-    marginBottom: 12
+    marginBottom: 12,
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   },
   loaderCard: {
-    
     borderRadius: 18,
     paddingVertical: 28,
     paddingHorizontal: 24,
@@ -98,6 +100,7 @@ const styles = StyleSheet.create({
     color: "#96A0A0",
     marginTop: 10,
     fontSize: 14,
-    fontWeight: "600"
+    includeFontPadding: false,
+    fontFamily: "Montserrat_400Regular"
   }
 })

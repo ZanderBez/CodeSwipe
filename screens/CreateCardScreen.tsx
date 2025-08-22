@@ -129,13 +129,15 @@ const styles = StyleSheet.create({
   title: {
     color: "#FFFFFF",
     fontSize: 20,
-    fontWeight: "800"
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   },
   subtitle: {
     color: "#7AE2CF",
     fontSize: 12,
-    fontWeight: "700",
-    marginTop: 2
+    marginTop: 2,
+    includeFontPadding: false,
+    fontFamily: "Montserrat_400Regular"
   },
   kav: {
     flex: 1
@@ -156,7 +158,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     color: "#FFFFFF",
     marginBottom: 8,
-    fontSize: 13
+    fontSize: 13,
+    includeFontPadding: false,
+    fontFamily: "Montserrat_400Regular"
   },
   submitBtn: {
     marginTop: 6,
@@ -167,8 +171,9 @@ const styles = StyleSheet.create({
     justifyContent: "center"
   },
   submitText: {
-    color: "#000000",
-    fontWeight: "800",
-    fontSize: 13
+    color: "#ffffffff",
+    fontSize: 13,
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   }
 })

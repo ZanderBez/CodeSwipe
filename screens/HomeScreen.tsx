@@ -170,10 +170,11 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     color: "#FFFFFF",
-    fontSize: 22,
-    fontWeight: "800",
+    fontSize: 20,
     marginBottom: 12,
-    letterSpacing: 0.5
+    letterSpacing: 0.5,
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   },
   pillBtn: {
     marginTop: "auto",
@@ -186,8 +187,9 @@ const styles = StyleSheet.create({
   },
   pillBtnText: {
     color: "#FFFFFF",
-    fontWeight: "800",
-    fontSize: Platform.OS === "android" ? 13 : 14
+    fontSize: Platform.OS === "android" ? 13 : 14,
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   },
   grid: {
     width: "100%",
@@ -227,7 +229,8 @@ const styles = StyleSheet.create({
   },
   levelPillText: {
     color: "#FFFFFF",
-    fontWeight: "800",
-    fontSize: 11
+    fontSize: 11,
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   }
 })

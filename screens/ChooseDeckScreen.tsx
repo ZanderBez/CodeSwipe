@@ -95,7 +95,8 @@ const styles = StyleSheet.create({
   title: {
     color: "#FFFFFF",
     fontSize: 22,
-    fontWeight: "800"
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   },
   manageBtnSmall: {
     paddingHorizontal: 12,
@@ -105,8 +106,9 @@ const styles = StyleSheet.create({
   },
   manageTxtSmall: {
     color: "#ffffffff",
-    fontWeight: "800",
-    fontSize: 12
+    fontSize: 12,
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   },
   grid: {
     width: "100%",
@@ -141,7 +143,8 @@ const styles = StyleSheet.create({
   },
   pillText: {
     color: "#FFFFFF",
-    fontWeight: "800",
-    fontSize: Platform.OS === "android" ? 12 : 14
+    fontSize: Platform.OS === "android" ? 12 : 14,
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   }
 })

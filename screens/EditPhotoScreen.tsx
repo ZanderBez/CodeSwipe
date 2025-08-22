@@ -1,6 +1,6 @@
 import React, { useState } from "react"
 import { SafeAreaView } from "react-native-safe-area-context"
-import { View, Text, Image, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, Platform } from "react-native"
+import { View, Text, Image, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from "react-native"
 import * as ImagePicker from "expo-image-picker"
 import { auth, db, storage } from "../firebase"
 import { doc, setDoc } from "firebase/firestore"
@@ -97,8 +97,9 @@ const styles = StyleSheet.create({
   title: {
     color: "#FFFFFF",
     fontSize: 24,
-    fontWeight: "800",
-    marginBottom: 14
+    marginBottom: 14,
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   },
   preview: {
     width: 160,
@@ -119,7 +120,9 @@ const styles = StyleSheet.create({
   },
   placeholderText: {
     color: "#7B8B8B",
-    fontSize: 14
+    fontSize: 14,
+    includeFontPadding: false,
+    fontFamily: "Montserrat_400Regular"
   },
   pickButton: {
     backgroundColor: "#7AE2CF",
@@ -129,8 +132,9 @@ const styles = StyleSheet.create({
   },
   pickButtonText: {
     color: "#0B0B0B",
-    fontWeight: "800",
-    textAlign: "center"
+    textAlign: "center",
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   },
   actions: {
     flexDirection: "row",
@@ -146,7 +150,8 @@ const styles = StyleSheet.create({
   cancelText: {
     color: "#FFFFFF",
     fontSize: 14,
-    fontWeight: "600"
+    includeFontPadding: false,
+    fontFamily: "Montserrat_400Regular"
   },
   save: {
     paddingHorizontal: 16,
@@ -157,6 +162,7 @@ const styles = StyleSheet.create({
   saveText: {
     color: "#0B0B0B",
     fontSize: 14,
-    fontWeight: "800"
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   }
 })

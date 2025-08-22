@@ -34,14 +34,17 @@ const styles = StyleSheet.create({
   title: {
     color: "#FFFFFF",
     fontSize: 22,
-    fontWeight: "800",
-    marginBottom: 6
+    marginBottom: 6,
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   },
   msg: {
     color: "#96A0A0",
     fontSize: 14,
     textAlign: "center",
-    marginBottom: 14
+    marginBottom: 14,
+    includeFontPadding: false,
+    fontFamily: "Montserrat_400Regular"
   },
   progressWrap: {
     flexDirection: "row",
@@ -50,17 +53,20 @@ const styles = StyleSheet.create({
   progress: {
     color: "#7AE2CF",
     fontSize: 28,
-    fontWeight: "900"
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   },
   progressSep: {
     color: "#7AE2CF",
     fontSize: 22,
-    fontWeight: "800",
-    marginHorizontal: 6
+    marginHorizontal: 6,
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   },
   progressTotal: {
     color: "#7AE2CF",
     fontSize: 22,
-    fontWeight: "800"
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   }
 })

@@ -314,7 +314,7 @@ export default function FlashcardsScreen({ route, navigation }: any) {
 
         {mode === "score" && (
           <View style={styles.scoreWrap}>
-            <Text>{theme.title}</Text>
+            <Text style={styles.scoreTitle}>{theme.title}</Text>
             <View style={styles.scoreCard}>
               <Text style={styles.scoreLabel}>Your Score</Text>
               <View style={styles.scoreTrack}>
@@ -354,8 +354,9 @@ const styles = StyleSheet.create({
   introTitle: {
     color: "#FFFFFF",
     fontSize: 36,
-    fontWeight: "800",
-    letterSpacing: 1
+    letterSpacing: 1,
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   },
   introUnderline: {
     width: 140,
@@ -368,7 +369,9 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     opacity: 0.9,
     fontSize: 16,
-    lineHeight: 24
+    lineHeight: 24,
+    includeFontPadding: false,
+    fontFamily: "Montserrat_400Regular"
   },
   smallBack: {
     marginTop: 18,
@@ -407,8 +410,9 @@ const styles = StyleSheet.create({
   },
   startBtnText: {
     color: "#FFFFFF",
-    fontWeight: "800",
-    fontSize: 16
+    fontSize: 16,
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   },
   header: {
     flexDirection: "row",
@@ -432,14 +436,15 @@ const styles = StyleSheet.create({
   topTitle: {
     color: "#FFFFFF",
     fontSize: 28,
-    fontWeight: "800",
-    letterSpacing: 1
+    letterSpacing: 1,
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   },
   topProgress: {
     color: "#7AE2CF",
     fontSize: 16,
-    fontWeight: "700",
-    marginTop: 2
+    includeFontPadding: false,
+    fontFamily: "Montserrat_400Regular"
   },
   timerTrack: {
     height: 14,
@@ -460,7 +465,8 @@ const styles = StyleSheet.create({
     right: 8,
     top: -1,
     color: "#FFFFFF",
-    fontWeight: "700"
+    includeFontPadding: false,
+    fontFamily: "Montserrat_400Regular"
   },
   deckWrap: {
     flex: 1,
@@ -527,7 +533,8 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     textAlign: "center",
     fontSize: 18,
-    fontWeight: "800"
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   },
   opt: {
     height: 44,
@@ -544,7 +551,8 @@ const styles = StyleSheet.create({
   optText: {
     color: "#000000",
     fontSize: 14,
-    fontWeight: "600"
+    includeFontPadding: false,
+    fontFamily: "Montserrat_700Bold"
   },
   explain: {
     marginTop: 10,
@@ -554,7 +562,9 @@ const styles = StyleSheet.create({
   },
   explainText: {
     color: "#333333",
-    fontSize: 13
+    fontSize: 13,
+    includeFontPadding: false,
+    fontFamily: "Montserrat_400Regular"
   },
   nextBtn: {
     marginTop: 14,
@@ -565,7 +575,8 @@ const styles = StyleSheet.create({
   },
   nextBtnText: {
     color: "#FFFFFF",
-    fontWeight: "800"
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   },
   fallback: {
     flex: 1,
@@ -573,12 +584,21 @@ const styles = StyleSheet.create({
     justifyContent: "center"
   },
   loading: {
-    color: "#FFFFFF"
+    color: "#FFFFFF",
+    includeFontPadding: false,
+    fontFamily: "Montserrat_400Regular"
   },
   scoreWrap: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center"
+  },
+  scoreTitle: {
+    color: "#FFFFFF",
+    fontSize: 20,
+    marginBottom: 8,
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   },
   scoreCard: {
     width: "70%",
@@ -595,8 +615,9 @@ const styles = StyleSheet.create({
   scoreLabel: {
     color: "#FFFFFF",
     fontSize: 16,
-    fontWeight: "700",
-    marginBottom: 8
+    marginBottom: 8,
+    includeFontPadding: false,
+    fontFamily: "Montserrat_400Regular"
   },
   scoreTrack: {
     width: "90%",
@@ -612,8 +633,9 @@ const styles = StyleSheet.create({
   },
   scoreText: {
     color: "#FFFFFF",
-    fontWeight: "800",
-    marginBottom: 12
+    marginBottom: 12,
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   },
   homeBtn: {
     width: "40%",
@@ -626,6 +648,7 @@ const styles = StyleSheet.create({
   },
   homeBtnText: {
     color: "#FFFFFF",
-    fontWeight: "800"
+    includeFontPadding: false,
+    fontFamily: "Orbitron_700Bold"
   }
 })
