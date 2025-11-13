@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
     columnGap: 20
   },
   card: {
-    height: "100%",
+    height: "105%",
     flex: 1,
     backgroundColor: "#0E0E0E",
     borderRadius: 22,

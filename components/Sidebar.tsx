@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
     borderColor: "#7AE2CF",
     borderRadius: 16,
     alignItems: "center",
-    paddingTop: Platform.OS === "ios" ? 18 : 10,
+    paddingTop: Platform.OS === "ios" ? 10 : 10,
     paddingBottom: 18,
     position: "relative",
     overflow: "hidden",

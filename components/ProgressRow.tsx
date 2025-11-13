@@ -1,52 +1,63 @@
-import React, { memo } from "react"
-import { View, Text, StyleSheet } from "react-native"
-import ProgressBar from "./ProgressBar"
+import React from "react";
+import { View, Text, StyleSheet, ViewStyle } from "react-native";
+import ProgressBar from "./ProgressBar";
 
 type Props = {
-  label: string
-  value: number
-  max: number
-  textColor?: string
-  barHeight?: number
-  compact?: boolean
-}
+  label: string;
+  value: number;
+  max: number;
+  barHeight?: number;
+  trackStyle?: ViewStyle;
+  fillStyle?: ViewStyle;
+  compact?: boolean; // optional for smaller spacing
+};
 
-function Row({ label, value, max, textColor = "#FFFFFF", barHeight = 16, compact = false }: Props) {
+export default function ProgressRow({
+  label,
+  value,
+  max,
+  barHeight = 16,
+  trackStyle,
+  fillStyle,
+  compact = false,
+}: Props) {
   return (
-    <View style={[styles.block, compact && styles.blockCompact]}>
-      <View style={styles.head}>
-        <Text style={[styles.label, { color: textColor }]}>{label}</Text>
-        <Text style={[styles.count, { color: textColor }]}>{value}/{max}</Text>
+    <View style={[styles.row, compact && styles.compactRow]}>
+      <View style={styles.labelContainer}>
+        <Text style={styles.label}>{label}</Text>
+        <Text style={styles.value}>{value}/{max}</Text>
       </View>
-      <ProgressBar value={value} max={max} height={barHeight} />
+      <ProgressBar
+        value={value}
+        max={max}
+        height={barHeight}
+        trackStyle={trackStyle}
+        fillStyle={fillStyle}
+      />
     </View>
-  )
+  );
 }
-
-export default memo(Row)
 
 const styles = StyleSheet.create({
-  block: {
-    marginBottom: 16
+  row: {
+    marginBottom: 16,
   },
-  blockCompact: {
-    marginBottom: 10
+  compactRow: {
+    marginBottom: 10,
   },
-  head: {
+  labelContainer: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 6
+    marginBottom: 6,
   },
   label: {
+    color: "#FFFFFF",
+    fontFamily: "Orbitron_700Bold",
     fontSize: 14,
-    includeFontPadding: false,
-    fontFamily: "Orbitron_700Bold"
   },
-  count: {
-    fontSize: 12,
-    opacity: 0.9,
-    includeFontPadding: false,
-    fontFamily: "Montserrat_400Regular"
-  }
-})
+  value: {
+    color: "#FFFFFF",
+    fontFamily: "Montserrat_700Bold",
+    fontSize: 14,
+  },
+});

@@ -1,43 +1,69 @@
-import React, { useState, useEffect } from "react"
-import { SafeAreaView, KeyboardAvoidingView, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Platform, View } from "react-native"
-import { loginUser } from "../services/authService"
-import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing } from "react-native-reanimated"
-import GoogleSwipeAuth from "../components/GoogleSwipeAuth"
-import { FontAwesome } from "@expo/vector-icons"
+import React, { useState, useEffect, useRef } from "react";
+import { SafeAreaView, KeyboardAvoidingView, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Platform, View, Easing, Animated} from "react-native";
+import { loginUser } from "../services/authService";
+import GoogleSwipeAuth from "../components/GoogleSwipeAuth";
+import { FontAwesome } from "@expo/vector-icons";
 
 export default function LoginScreen({ navigation }: any) {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [loading, setLoading] = useState(false)
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const bob = useSharedValue(0)
+  const bob = useRef(new Animated.Value(0)).current;
+
   useEffect(() => {
-    bob.value = withRepeat(withTiming(1, { duration: 2200, easing: Easing.inOut(Easing.quad) }), -1, true)
-  }, [])
-  const bobStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: (bob.value - 0.5) * 10 }]
-  }))
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(bob, {
+          toValue: 1,
+          duration: 1100,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.timing(bob, {
+          toValue: 0,
+          duration: 1100,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
+
+  const bobStyle = {
+    transform: [
+      {
+        translateY: bob.interpolate({
+          inputRange: [0, 1],
+          outputRange: [-5, 5],
+        }),
+      },
+    ],
+  };
 
   const handleLogin = async () => {
-    if (loading) return
+    if (loading) return;
     if (!email || !password) {
-      Alert.alert("Error", "Please enter both email and password.")
-      return
+      Alert.alert("Error", "Please enter both email and password.");
+      return;
     }
     try {
-      setLoading(true)
-      await loginUser(email, password)
-      navigation.replace("Home")
+      setLoading(true);
+      await loginUser(email, password);
+      navigation.replace("Home");
     } catch (error: any) {
-      Alert.alert("Login Failed", error.message)
+      Alert.alert("Login Failed", error.message);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
         <View style={styles.row}>
           <View style={styles.leftCol}>
             <View style={styles.accentCircle} pointerEvents="none" />
@@ -66,19 +92,27 @@ export default function LoginScreen({ navigation }: any) {
                 onPress={handleLogin}
                 disabled={loading}
               >
-                <Text style={styles.primaryButtonText}>{loading ? "Logging in..." : "Log In"}</Text>
+                <Text style={styles.primaryButtonText}>
+                  {loading ? "Logging in..." : "Log In"}
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 disabled={loading}
                 onPress={() => navigation.navigate("SignUp")}
               >
-                <Text style={styles.link}>Dont Have an account ? <Text style={styles.linkStrong}>Sign Up</Text></Text>
+                <Text style={styles.link}>
+                  Dont Have an account ?{" "}
+                  <Text style={styles.linkStrong}>Sign Up</Text>
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
 
           <View style={styles.rightCol}>
-            <GoogleSwipeAuth onSuccess={() => navigation.replace("Home")} style={styles.rightSwipeArea}>
+            <GoogleSwipeAuth
+              onSuccess={() => navigation.replace("Home")}
+              style={styles.rightSwipeArea}
+            >
               <Animated.View style={[styles.rightAnimated, bobStyle]}>
                 <View style={styles.rightCopy}>
                   <Text style={styles.rightTitle}>Log In</Text>
@@ -96,29 +130,29 @@ export default function LoginScreen({ navigation }: any) {
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#000000"
+    backgroundColor: "#000000",
   },
   container: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingVertical: 12
+    paddingVertical: 12,
   },
   row: {
     flex: 1,
-    flexDirection: "row"
+    flexDirection: "row",
   },
   leftCol: {
     flex: 3,
     justifyContent: "center",
     alignItems: "center",
     position: "relative",
-    paddingHorizontal: 24
+    paddingHorizontal: 24,
   },
   title: {
     fontSize: 44,
@@ -128,12 +162,12 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     letterSpacing: 1,
     includeFontPadding: false,
-    fontFamily: "Orbitron_700Bold"
+    fontFamily: "Orbitron_700Bold",
   },
   form: {
     width: "100%",
     maxWidth: 500,
-    gap: 12
+    gap: 12,
   },
   input: {
     width: "100%",
@@ -146,7 +180,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 20,
     includeFontPadding: false,
-    fontFamily: "Montserrat_400Regular"
+    fontFamily: "Montserrat_400Regular",
   },
   primaryButton: {
     width: "100%",
@@ -154,26 +188,26 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     height: 48,
     alignItems: "center",
-    justifyContent: "center"
+    justifyContent: "center",
   },
   primaryButtonText: {
     color: "#FFFFFF",
     fontSize: 16,
     letterSpacing: 1,
     includeFontPadding: false,
-    fontFamily: "Orbitron_700Bold"
+    fontFamily: "Orbitron_700Bold",
   },
   link: {
     color: "#7AE2CF",
     fontSize: 14,
     textAlign: "center",
     includeFontPadding: false,
-    fontFamily: "Montserrat_400Regular"
+    fontFamily: "Montserrat_400Regular",
   },
   linkStrong: {
     color: "#FFFFFF",
     includeFontPadding: false,
-    fontFamily: "Montserrat_700Bold"
+    fontFamily: "Montserrat_700Bold",
   },
   accentCircle: {
     position: "absolute",
@@ -185,27 +219,27 @@ const styles = StyleSheet.create({
     borderRadius: 280,
     borderWidth: 5,
     borderColor: "#7AE2CF",
-    backgroundColor: "transparent"
+    backgroundColor: "transparent",
   },
   rightCol: {
     flex: 2,
     justifyContent: "center",
     alignItems: "flex-end",
-    paddingRight: 32
+    paddingRight: 32,
   },
   rightSwipeArea: {
     flex: 1,
     width: "100%",
     justifyContent: "center",
     alignItems: "flex-end",
-    paddingRight: 32
+    paddingRight: 32,
   },
   rightAnimated: {
     alignItems: "flex-end",
-    gap: 8
+    gap: 8,
   },
   rightCopy: {
-    alignItems: "flex-end"
+    alignItems: "flex-end",
   },
   rightTitle: {
     color: "#FFFFFF",
@@ -213,7 +247,7 @@ const styles = StyleSheet.create({
     lineHeight: 52,
     letterSpacing: 1,
     includeFontPadding: false,
-    fontFamily: "Orbitron_700Bold"
+    fontFamily: "Orbitron_700Bold",
   },
   rightSub: {
     color: "#FFFFFF",
@@ -221,13 +255,13 @@ const styles = StyleSheet.create({
     lineHeight: 52,
     letterSpacing: 1,
     includeFontPadding: false,
-    fontFamily: "Orbitron_700Bold"
+    fontFamily: "Orbitron_700Bold",
   },
   googleRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    marginTop: 8
+    marginTop: 8,
   },
   googleBadge: {
     width: 44,
@@ -235,12 +269,12 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     backgroundColor: "#FFFFFF",
     alignItems: "center",
-    justifyContent: "center"
+    justifyContent: "center",
   },
   arrow: {
     color: "#FFFFFF",
     fontSize: 26,
     includeFontPadding: false,
-    fontFamily: "Orbitron_700Bold"
-  }
-})
+    fontFamily: "Orbitron_700Bold",
+  },
+});
