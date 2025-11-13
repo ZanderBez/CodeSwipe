@@ -3,6 +3,7 @@
 ![CodeSwipe Header Image](./ReadMeAssets/banner.png)
 <a id="readme-top"></a>
 
+<!-- PROJECT SHIELDS -->
 [![Contributors](https://img.shields.io/github/contributors/ZanderBez/CodeSwipe.svg?style=for-the-badge)](https://github.com/ZanderBez/CodeSwipe/graphs/contributors)
 [![Forks](https://img.shields.io/github/forks/ZanderBez/CodeSwipe.svg?style=for-the-badge)](https://github.com/ZanderBez/CodeSwipe/network/members)
 [![Stargazers](https://img.shields.io/github/stars/ZanderBez/CodeSwipe.svg?style=for-the-badge)](https://github.com/ZanderBez/CodeSwipe/stargazers)
