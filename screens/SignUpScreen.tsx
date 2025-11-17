@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { SafeAreaView, KeyboardAvoidingView, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Platform, View, Easing, Animated} from "react-native";
 import { registerUser } from "../services/authService";
-import { FontAwesome } from "@expo/vector-icons";
-import GoogleSwipeAuth from "../components/GoogleSwipeAuth";
+// import { FontAwesome } from "@expo/vector-icons";
+// import GoogleSwipeAuth from "../components/GoogleSwipeAuth";
 
 export default function SignUpScreen({ navigation }: any) {
   const [name, setName] = useState("");
@@ -111,26 +111,18 @@ export default function SignUpScreen({ navigation }: any) {
           </View>
 
           <View style={styles.rightCol}>
-            <GoogleSwipeAuth
-              onSuccess={() =>
-                navigation.replace("Home", { showOnboarding: true })
-              }
-              style={styles.rightSwipeArea}
-            >
-              <Animated.View style={[styles.rightAnimated, bobStyle]}>
-                <View style={styles.rightCopy}>
-                  <Text style={styles.rightTitle}>Sign up</Text>
-                  <Text style={styles.rightSub}>with</Text>
-                </View>
-                <View style={styles.googleRow}>
-                  <View style={styles.googleBadge}>
-                    <FontAwesome name="google" size={20} color="#000" />
-                  </View>
-                  <Text style={styles.arrow}>→</Text>
-                </View>
-              </Animated.View>
-            </GoogleSwipeAuth>
-
+            <Animated.Image
+              source={require("../assets/signlogo.png")}
+              style={[
+                {
+                  width: 250,
+                  height: 250,
+                  opacity: 0.9,
+                  resizeMode: "contain",
+                },
+                bobStyle,
+              ]}
+            />
             <View style={styles.loginRow}>
               <Text style={styles.haveAcc}>Already Have an account ? </Text>
               <Text
@@ -227,7 +219,6 @@ const styles = StyleSheet.create({
     flex: 2,
     justifyContent: "center",
     alignItems: "flex-end",
-    paddingRight: 10,
     gap: 16,
   },
   rightAnimated: {

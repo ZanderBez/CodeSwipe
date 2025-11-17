@@ -202,7 +202,7 @@ Want to try CodeSwipe right now?
 
 2. Open Expo Go and scan the QR code below:  
 
-![CodeSwipe QR Code](./ReadMeAssets/QRCode.png)
+![CodeSwipe QR Code](./ReadMeAssets/CodeSwipe-expo-qr.png)
 
 3. The app will load instantly in Expo Go.  
 

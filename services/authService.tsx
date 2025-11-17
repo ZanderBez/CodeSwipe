@@ -49,34 +49,34 @@ export const syncUserProfile = async (params: {
 
 
 //Google Sign-In
-const ensureUserDoc = async (u: { uid: string; email: string | null; displayName: string | null; photoURL: string | null; }) => {
-  const ref = doc(db, "users", u.uid);
-  const snap = await getDoc(ref);
-  if (!snap.exists()) {
-    await setDoc(ref, {
-      uid: u.uid,
-      email: u.email,
-      name: u.displayName ?? "",
-      photoURL: u.photoURL ?? "",
-      role: "user",
-      provider: "google",
-      createdAt: serverTimestamp(),
-    });
-  }
-};
+// const ensureUserDoc = async (u: { uid: string; email: string | null; displayName: string | null; photoURL: string | null; }) => {
+//   const ref = doc(db, "users", u.uid);
+//   const snap = await getDoc(ref);
+//   if (!snap.exists()) {
+//     await setDoc(ref, {
+//       uid: u.uid,
+//       email: u.email,
+//       name: u.displayName ?? "",
+//       photoURL: u.photoURL ?? "",
+//       role: "user",
+//       provider: "google",
+//       createdAt: serverTimestamp(),
+//     });
+//   }
+// };
 
-export const signInWithGoogleWeb = async () => {
-  await setPersistence(auth, browserLocalPersistence);
-  const provider = new GoogleAuthProvider();
-  provider.setCustomParameters({ prompt: "select_account" });
-  const result = await signInWithPopup(auth, provider);
-  await ensureUserDoc(result.user);
-  return result;
-};
+// export const signInWithGoogleWeb = async () => {
+//   await setPersistence(auth, browserLocalPersistence);
+//   const provider = new GoogleAuthProvider();
+//   provider.setCustomParameters({ prompt: "select_account" });
+//   const result = await signInWithPopup(auth, provider);
+//   await ensureUserDoc(result.user);
+//   return result;
+// };
 
-export const finishGoogleSignIn = async (idToken: string) => {
-  const credential = GoogleAuthProvider.credential(idToken);
-  const userCred = await signInWithCredential(auth, credential);
-  await ensureUserDoc(userCred.user);
-  return userCred;
-};
+// export const finishGoogleSignIn = async (idToken: string) => {
+//   const credential = GoogleAuthProvider.credential(idToken);
+//   const userCred = await signInWithCredential(auth, credential);
+//   await ensureUserDoc(userCred.user);
+//   return userCred;
+// };

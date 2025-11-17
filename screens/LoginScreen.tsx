@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { SafeAreaView, KeyboardAvoidingView, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Platform, View, Easing, Animated} from "react-native";
 import { loginUser } from "../services/authService";
-import GoogleSwipeAuth from "../components/GoogleSwipeAuth";
-import { FontAwesome } from "@expo/vector-icons";
+// import GoogleSwipeAuth from "../components/GoogleSwipeAuth";
+// import { FontAwesome } from "@expo/vector-icons";
 
 export default function LoginScreen({ navigation }: any) {
   const [email, setEmail] = useState("");
@@ -109,23 +109,18 @@ export default function LoginScreen({ navigation }: any) {
           </View>
 
           <View style={styles.rightCol}>
-            <GoogleSwipeAuth
-              onSuccess={() => navigation.replace("Home")}
-              style={styles.rightSwipeArea}
-            >
-              <Animated.View style={[styles.rightAnimated, bobStyle]}>
-                <View style={styles.rightCopy}>
-                  <Text style={styles.rightTitle}>Log In</Text>
-                  <Text style={styles.rightSub}>with</Text>
-                </View>
-                <View style={styles.googleRow}>
-                  <View style={styles.googleBadge}>
-                    <FontAwesome name="google" size={20} color="#000" />
-                  </View>
-                  <Text style={styles.arrow}>→</Text>
-                </View>
-              </Animated.View>
-            </GoogleSwipeAuth>
+            <Animated.Image
+              source={require("../assets/signlogo.png")}
+              style={[
+                {
+                  width: 250,
+                  height: 250,
+                  opacity: 0.9,
+                  resizeMode: "contain",
+                },
+                bobStyle,
+              ]}
+            />
           </View>
         </View>
       </KeyboardAvoidingView>
@@ -225,14 +220,12 @@ const styles = StyleSheet.create({
     flex: 2,
     justifyContent: "center",
     alignItems: "flex-end",
-    paddingRight: 32,
   },
   rightSwipeArea: {
     flex: 1,
     width: "100%",
     justifyContent: "center",
     alignItems: "flex-end",
-    paddingRight: 32,
   },
   rightAnimated: {
     alignItems: "flex-end",
