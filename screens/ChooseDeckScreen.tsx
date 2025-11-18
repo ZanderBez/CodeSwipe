@@ -18,7 +18,6 @@ const CARDS = [
 
 export default function ChooseDeckScreen({ route, navigation }: any) {
   const [name, setName] = useState<string>("")
-  const mode = route?.params?.mode ?? "play"
   const { eligible } = useEligibility()
 
   useEffect(() => {
@@ -30,10 +29,8 @@ export default function ChooseDeckScreen({ route, navigation }: any) {
   }, [])
 
   const goNext = (deck: { id: DeckId, title: string }) => {
-    if (mode === "create") {
+    const goNext = (deck: { id: DeckId, title: string }) => {
       navigation.navigate("CreateCard", { deckId: deck.id, deckTitle: deck.title })
-    } else {
-      navigation.navigate("Flashcards", { deckId: deck.id })
     }
   }
 
@@ -43,7 +40,7 @@ export default function ChooseDeckScreen({ route, navigation }: any) {
         <Sidebar name={name} navigation={navigation} active="Create" />
         <View style={styles.content}>
           <View style={styles.titleRow}>
-            <Text style={styles.title}>{mode === "create" ? "Choose a Deck to Create a Card" : "Choose a Deck"}</Text>
+            <Text style={styles.title}>"Choose a Deck to Create a Card"</Text>
             {eligible && (
               <TouchableOpacity style={styles.manageBtnSmall} onPress={() => navigation.navigate("ManageCards")}>
                 <Text style={styles.manageTxtSmall}>Manage</Text>

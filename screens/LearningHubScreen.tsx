@@ -30,7 +30,7 @@ export default function LearningHubScreen({ navigation }: any) {
 useEffect(() => {
   if (!loading && !showLoader) {
     if (eligible) {
-      navigation.replace("ChooseDeck", { mode: "create" })
+      navigation.replace("ChooseDeck")
     }
   }
 }, [loading, showLoader, navigation])

@@ -3,7 +3,7 @@
 ![CodeSwipe Header Image](./ReadMeAssets/banner.png)
 <a id="readme-top"></a>
 
-<!-- PROJECT SHIELDS -->
+
 [![Contributors](https://img.shields.io/github/contributors/ZanderBez/CodeSwipe.svg?style=for-the-badge)](https://github.com/ZanderBez/CodeSwipe/graphs/contributors)
 [![Forks](https://img.shields.io/github/forks/ZanderBez/CodeSwipe.svg?style=for-the-badge)](https://github.com/ZanderBez/CodeSwipe/network/members)
 [![Stargazers](https://img.shields.io/github/stars/ZanderBez/CodeSwipe.svg?style=for-the-badge)](https://github.com/ZanderBez/CodeSwipe/stargazers)
@@ -101,7 +101,7 @@ npx expo start
 | Feature                 | Description |
 |--------------------------|-------------|
 | Splash + Onboarding      | Introductory screens that guide the user into the app. |
-| Authentication           | Sign up / log in with email & password. Google login supported in test mode. |
+| Authentication           | Sign up / log in with email & password.|
 | Home Page                | Displays user "Code Points" and lets them choose quiz difficulty. |
 | Flashcard Quiz           | Swipe-based quiz: right = correct, left = incorrect. |
 | Performance Page         | Shows total correct answers across the app, correct answers per deck, and motivational coding quotes from an external API. |
@@ -139,7 +139,7 @@ By combining habit building mechanics with coding concepts, CodeSwipe helps begi
 
 ### Highlights
 - **User-Centered Flow** — Designed a simple onboarding system to introduce the app before users begin.  
-- **Authentication Integration** — Implemented Firebase for secure email/password sign-up and login, with Google login in test mode.  
+- **Authentication Integration** — Implemented Firebase for secure email/password sign-up and login
 - **Habit-Driven Design** — Added “Code Points” and unlockable features to encourage consistent learning.  
 - **Quiz System** — Built a swipe-based flashcard quiz system that allows users to quickly test themselves and reinforce concepts.  
 - **Performance Tracking** — Created a dedicated performance page that shows total correct answers, correct answers per deck, and motivational coding quotes from an API.  
@@ -147,7 +147,7 @@ By combining habit building mechanics with coding concepts, CodeSwipe helps begi
 - **Unlockable Features** — Restricted card creation until a user reaches 20 correct answers, gamifying progress.  
 
 ### Challenges
-- **Google Authentication** — While Firebase login works, production-ready Google OAuth was difficult to set up because of Cloud configuration and testing restrictions.  
+- **Google Authentication** — While Firebase login works, production-ready Google OAuth is difficult to set up because of Cloud configuration and testing restrictions.  
 - **Swipe Logic** — Ensuring smooth, responsive swipe gestures for quizzes while avoiding accidental swipes was tricky to fine-tune.  
 - **Card Creation Rules** — Designing the logic so users only unlock card creation after reaching 20 correct answers required custom state management.  
 - **Image Uploads** — Adding and managing profile pictures across devices needed Firebase Storage integration and testing.  
@@ -164,7 +164,6 @@ After installing and running the app, users can:
 2. **Sign Up / Login**  
    - Create an account with email and password.  
    - Log in with existing credentials.  
-   - Google login is supported in test mode.  
 
 3. **Onboarding**  
    - View a quick overlay that explains how CodeSwipe works.  

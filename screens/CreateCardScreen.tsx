@@ -59,7 +59,7 @@ export default function CreateCardScreen({ route, navigation }: any) {
         <Sidebar name={name} navigation={navigation} active="Create" />
         <View style={styles.content}>
           <View style={styles.headerRow}>
-            <TouchableOpacity onPress={() => navigation.navigate("ChooseDeck", { mode: "create" })} style={styles.backBtn}>
+            <TouchableOpacity onPress={() => navigation.navigate("ChooseDeck")} style={styles.backBtn}>
               <Ionicons name="arrow-back" size={18} color="#ffffffff" />
             </TouchableOpacity>
             <View style={styles.headerCenter}>
